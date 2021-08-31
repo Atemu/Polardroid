@@ -29,13 +29,33 @@ rec {
     " > /tmp/enter'
     adb shell chmod +x /tmp/enter
     echo 'Nix has been installed, you can now run `adb shell` and then `/tmp/enter` to get a Nix environment'
+
+    # Fake `/etc/passwd` to make SSH work
+    adb shell 'echo "root:x:0:0::/:" > /etc/passwd'
   '';
 
   removeCmd = adbScriptBin "removeCmd" ''
     adb shell 'while true ; do umount /nix 2>/dev/null || break ; done'
     adb shell 'rm -fr /tmp/nix'
     adb shell 'rm /tmp/enter'
+    adb shell 'rm /etc/passwd'
     echo 'Removed Nix and connected state from device'
+  '';
+
+  runSshd = pkgs.writeShellScriptBin "runSshd" ''
+    echo 'Forwarding SSH port to host'
+    adb reverse tcp:4222 tcp:4222
+
+    echo 'Starting new SSHD'
+    sudo ${pkgs.openssh}/bin/sshd -f /etc/ssh/sshd_config -p 4222
+
+    echo 'You can now reach your host using `ssh <hostusername>@127.0.0.1 -p 4222` from the device'
+  '';
+
+  removeForwards = pkgs.writeShellScriptBin "removeForwards" ''
+    echo 'Removing all adb port forwards'
+    adb forward --remove-all
+    adb reverse --remove-all
   '';
 
   hostCmds = pkgs.buildEnv {
@@ -43,6 +63,8 @@ rec {
     paths = [
       installCmd
       removeCmd
+      runSshd
+      removeForwards
     ];
   };
 }
