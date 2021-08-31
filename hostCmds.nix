@@ -4,11 +4,15 @@ rec {
   targetPkgs = import <nixpkgs> { system = targetSystem; };
   recoveryEnv = import ./recoveryEnv.nix { inherit targetPkgs; };
 
-  adbScriptBin = name: script: pkgs.writeShellScriptBin name ''
-    command -V adb || { echo 'You need ADB in your PATH. You can install it via `programs.adb.enable` on NixOS'; exit 1; }
-
-    ${script}
-  '';
+  adbScriptBin = name: script: pkgs.writeShellScriptBin name (
+    (if pkgs ? android-tools then ''
+      PATH=${pkgs.android-tools}/bin/:$PATH
+    '' else ''
+      command -V adb || {
+        echo 'You need to build this with nixpkgs >= 21.11 or have ADB in your PATH. You can install adb via `programs.adb.enable` on NixOS'
+        exit 1
+      }
+    '') + script);
 
   installCmd = adbScriptBin "installCmd" ''
     tmpdir="$(mktemp -d)"
