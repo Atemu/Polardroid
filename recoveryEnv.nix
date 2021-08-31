@@ -24,7 +24,7 @@ pkgs.buildEnv {
     rsync
     openssh
 
-    # borgCmd
+    borgCmd
     ncduCmd
   ];
 }
