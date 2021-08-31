@@ -10,6 +10,8 @@ in
 pkgs.buildEnv {
   name = "recovery";
   paths = with targetPkgs; [
+    # Warning: You need to be able to realise these on your host machine!
+    # If they're not cached, you will need an aarch64 builder!
     bashInteractive
     coreutils
     findutils
