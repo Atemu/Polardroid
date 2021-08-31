@@ -46,14 +46,17 @@ rec {
     echo 'Removed Nix and connected state from device'
   '';
 
+  # One step because you only need to run this once and it works from there on
   runSshd = pkgs.writeShellScriptBin "runSshd" ''
     echo 'Forwarding SSH port to host'
     adb reverse tcp:4222 tcp:4222
 
     echo 'Starting new SSHD'
     sudo ${pkgs.openssh}/bin/sshd -f /etc/ssh/sshd_config -p 4222
+    pid=$!
 
     echo 'You can now reach your host using `ssh <hostusername>@127.0.0.1 -p 4222` from the device'
+    echo 'To stop the sshd, run `kill'$pid'`.'
   '';
 
   removeForwards = pkgs.writeShellScriptBin "removeForwards" ''
