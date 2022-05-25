@@ -15,6 +15,14 @@ rec {
     '') + script);
 
   installCmd = adbScriptBin "installCmd" ''
+    adb shell mkdir /nix 2>/dev/null && \
+    adb shell mount -t tmpfs tmpfs /nix || \
+    { echo "/nix already exists. Files will been dirty-copied over the old Nix store closure."
+      echo "This is not necessarily an issue if you've run this before."
+      echo "Giving you two seconds to cancel.."
+      sleep 2
+    }
+
     tmpdir="$(mktemp -d)"
 
     # Create new Nix store in tmpdir on host
@@ -22,10 +30,9 @@ rec {
 
     # Copy Nix store over to the device
     adb shell mount -o remount,size=4G /tmp
-    time tar cf - -C "$tmpdir" nix/ | ${pkgs.pv}/bin/pv | gzip -2 | adb shell 'gzip -d | tar xf - -C /tmp/'
+    time tar cf - -C "$tmpdir" nix/ | ${pkgs.pv}/bin/pv | gzip -2 | adb shell 'gzip -d | tar xf - -C /'
+
     chmod -R +w "$tmpdir" && rm -r "$tmpdir"
-    adb shell mkdir /nix || echo "Not an issue if you've run this before."
-    adb shell mount -o bind /tmp/nix /nix
 
     # Provide handy script to enter an env with Nix
     adb shell 'echo "#!/nix/var/nix/profiles/default/bin/bash
@@ -39,11 +46,11 @@ rec {
   '';
 
   removeCmd = adbScriptBin "removeCmd" ''
-    adb shell 'while true ; do umount /nix 2>/dev/null || break ; done'
-    adb shell 'rm -fr /tmp/nix'
-    adb shell 'rm /tmp/enter'
-    adb shell 'rm /etc/passwd'
-    echo 'Removed Nix and connected state from device'
+    adb shell umount /nix
+    adb shell rmdir /nix
+    adb shell rm /tmp/enter /etc/passwd
+
+    echo "All traces of Nix removed."
   '';
 
   # One step because you only need to run this once and it works from there on
