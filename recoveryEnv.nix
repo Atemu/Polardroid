@@ -16,6 +16,7 @@ pkgs.buildEnv {
     coreutils
     findutils
     less
+    vim
 
     borgbackup
     ncdu
