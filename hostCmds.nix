@@ -37,9 +37,9 @@ rec {
     # Provide handy script to enter an env with Nix
     adb shell 'echo "#!/nix/var/nix/profiles/default/bin/bash
     PATH=/nix/var/nix/profiles/default/bin:$PATH exec bash
-    " > /tmp/enter'
-    adb shell chmod +x /tmp/enter
-    echo 'Nix has been installed, you can now run `adb shell` and then `/tmp/enter` to get a Nix environment'
+    " > /nix/enter'
+    adb shell chmod +x /nix/enter
+    echo 'Nix has been installed, you can now run `adb shell` and then `/nix/enter` to get a Nix environment'
 
     # Fake `/etc/passwd` to make SSH work
     adb shell 'echo "root:x:0:0::/:" > /etc/passwd'
@@ -48,7 +48,7 @@ rec {
   removeCmd = adbScriptBin "removeCmd" ''
     adb shell umount /nix
     adb shell rmdir /nix
-    adb shell rm /tmp/enter /etc/passwd
+    adb shell rm /etc/passwd
 
     echo "All traces of Nix removed."
   '';
