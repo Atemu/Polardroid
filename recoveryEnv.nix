@@ -16,7 +16,6 @@ pkgs.buildEnv {
     coreutils
     findutils
     less
-    nix
 
     borgbackup
     ncdu
