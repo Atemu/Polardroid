@@ -10,7 +10,7 @@
     progress = true;
   }
 , extraBorgArgs ? [ ]
-, borgRepo ? [ "'ssh://atemu@127.0.0.1:4222/mnt/borg/phone::A0005.data.{now}'" ]
+, borgRepo ? [ "'ssh://atemu@127.0.0.1:4222/mnt/borg/Phone::A0005.data.{now}'" ]
 , borgPath ? "/data"
 , extraNcduArgs ? [ ]
 }:
