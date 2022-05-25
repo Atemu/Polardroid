@@ -52,11 +52,11 @@ rec {
     adb reverse tcp:4222 tcp:4222
 
     echo 'Starting new SSHD'
-    sudo ${pkgs.openssh}/bin/sshd -f /etc/ssh/sshd_config -p 4222
+    sudo ${pkgs.openssh}/bin/sshd -D -f /etc/ssh/sshd_config -p 4222 &
     pid=$!
 
     echo 'You can now reach your host using `ssh <hostusername>@127.0.0.1 -p 4222` from the device'
-    echo 'To stop the sshd, run `kill'$pid'`.'
+    echo 'To stop the sshd, run `sudo kill' $pid'`.'
   '';
 
   removeForwards = pkgs.writeShellScriptBin "removeForwards" ''
