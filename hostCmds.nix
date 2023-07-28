@@ -58,11 +58,15 @@ rec {
     echo 'Forwarding SSH port to host'
     adb reverse tcp:4222 tcp:4222
 
+    echo 'Need to elevate privileges to run sshd'
+    sudo echo "Received privileges!" || exit 1
     echo 'Starting new SSHD'
     sudo ${pkgs.openssh}/bin/sshd -D -f /etc/ssh/sshd_config -p 4222 &
     pid=$!
 
-    echo 'You can now reach your host using `ssh <hostusername>@127.0.0.1 -p 4222` from the device'
+    USER="''${USER:=<hostusername>}"
+
+    echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p 4222\` from the device"
     echo 'To stop the sshd, run `sudo kill' $pid'`.'
   '';
 
