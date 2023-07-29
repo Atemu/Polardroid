@@ -1,5 +1,9 @@
 { pkgs ? import <nixpkgs> { }, targetSystem ? "aarch64-linux" }:
 
+let
+  inherit (pkgs.lib) getExe;
+in
+
 rec {
   targetPkgs = import <nixpkgs> { system = targetSystem; };
   recoveryEnv = import ./recoveryEnv.nix { inherit targetPkgs; };
@@ -30,7 +34,7 @@ rec {
 
     # Copy Nix store over to the device
     adb shell mount -o remount,size=4G /tmp
-    time tar cf - -C "$tmpdir" nix/ | ${pkgs.pv}/bin/pv | gzip -2 | adb shell 'gzip -d | tar xf - -C /'
+    time tar cf - -C "$tmpdir" nix/ | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C /'
 
     chmod -R +w "$tmpdir" && rm -r "$tmpdir"
 
