@@ -3,6 +3,11 @@
 let
   inherit (pkgs.lib) getExe;
   prefix = "";
+
+  enterScript = pkgs.writeText "enter" ''
+    #!${prefix}/nix/var/nix/profiles/default/bin/bash
+    PATH=/nix/var/nix/profiles/default/bin:$PATH exec bash
+  '';
 in
 
 rec {
@@ -40,9 +45,7 @@ rec {
     chmod -R +w "$tmpdir" && rm -r "$tmpdir"
 
     # Provide handy script to enter an env with Nix
-    adb shell 'echo "#!/nix/var/nix/profiles/default/bin/bash
-    PATH=/nix/var/nix/profiles/default/bin:$PATH exec bash
-    " > ${prefix}/nix/enter'
+    adb push ${enterScript} ${prefix}/nix/enter
     adb shell chmod +x /nix/enter
     echo 'Nix has been installed, you can now run `adb shell` and then `/nix/enter` to get a Nix environment'
 
