@@ -2,6 +2,7 @@
 
 let
   inherit (pkgs.lib) getExe;
+  prefix = "";
 in
 
 rec {
@@ -34,14 +35,14 @@ rec {
 
     # Copy Nix store over to the device
     adb shell mount -o remount,size=4G /tmp
-    time tar cf - -C "$tmpdir" nix/ | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C /'
+    time tar cf - -C "$tmpdir" nix/ | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
 
     chmod -R +w "$tmpdir" && rm -r "$tmpdir"
 
     # Provide handy script to enter an env with Nix
     adb shell 'echo "#!/nix/var/nix/profiles/default/bin/bash
     PATH=/nix/var/nix/profiles/default/bin:$PATH exec bash
-    " > /nix/enter'
+    " > ${prefix}/nix/enter'
     adb shell chmod +x /nix/enter
     echo 'Nix has been installed, you can now run `adb shell` and then `/nix/enter` to get a Nix environment'
 
@@ -50,9 +51,9 @@ rec {
   '';
 
   removeCmd = adbScriptBin "removeCmd" ''
-    adb shell umount /nix
-    adb shell rmdir /nix
-    adb shell rm /etc/passwd
+    adb shell umount ${prefix}/nix
+    adb shell rmdir ${prefix}/nix
+    adb shell rm ${prefix}/etc/passwd
 
     echo "All traces of Nix removed."
   '';
