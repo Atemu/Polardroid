@@ -1,12 +1,15 @@
 { pkgs ? import <nixpkgs> { }, targetSystem ? "aarch64-linux" }:
 
 let
-  inherit (pkgs.lib) getExe getBin;
+  inherit (pkgs.lib) getExe getBin optionalString;
 
   targetPkgs = import <nixpkgs> { system = targetSystem; };
   recoveryEnv = import ./recoveryEnv.nix { inherit targetPkgs; };
 
   prefix = "/data/local/tmp/nix-chroot";
+
+  # TODO make non-tmpfs installation work again
+  useTmpfs = true;
 in
 
 rec {
@@ -41,11 +44,11 @@ rec {
     #!/bin/sh
     ${prefix}/cleanup
 
-    if grep ${prefix} /proc/mounts > /dev/null ; then
-      echo Error: There is still a mount active under ${prefix}, refusing to delete anything.
+    if grep ${prefix}/ /proc/mounts > /dev/null ; then
+      echo Error: There is still a mount active under ${prefix}, umount them first. If you only wanted to clean up before reboot, you can safely reboot now.
       exit 1
     else
-      rm -rf ${prefix}
+      exit 0
     fi
   '';
 
@@ -59,7 +62,7 @@ rec {
       }
     '') + script);
 
-  installCmd = adbScriptBin "installCmd" ''
+  installCmd = adbScriptBin "installCmd" (''
     if adb shell ls -d ${prefix} ; then
       echo Error: Nix environment has been installed already. Remove it using the removeCmd.
       exit 1
@@ -72,6 +75,9 @@ rec {
 
     # Copy Nix store over to the device
     adb shell mkdir -p ${prefix}
+  '' + optionalString useTmpfs ''
+    adb shell mount -t tmpfs tmpfs ${prefix}
+  '' + ''
     time tar cf - -C "$tmpdir" nix/ | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
 
     chmod -R +w "$tmpdir" && rm -r "$tmpdir"
@@ -88,13 +94,17 @@ rec {
     # Fake `/etc/passwd` to make SSH work
     adb shell 'mkdir -p ${prefix}/etc/'
     adb shell 'echo "root:x:0:0::/:" > ${prefix}/etc/passwd'
-  '';
+  '');
 
-  removeCmd = adbScriptBin "removeCmd" ''
+  removeCmd = adbScriptBin "removeCmd" (''
     adb shell sh ${prefix}/remove
+  '' + optionalString useTmpfs ''
+    adb shell umount ${prefix}
+    adb shell rmdir ${prefix}
+  '' + ''
 
     echo "All traces of Nix removed."
-  '';
+  '');
 
   # One step because you only need to run this once and it works from there on
   runSshd = pkgs.writeShellScriptBin "runSshd" ''
