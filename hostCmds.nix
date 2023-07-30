@@ -1,18 +1,53 @@
 { pkgs ? import <nixpkgs> { }, targetSystem ? "aarch64-linux" }:
 
 let
-  inherit (pkgs.lib) getExe;
-  prefix = "";
+  inherit (pkgs.lib) getExe getBin;
 
-  enterScript = pkgs.writeText "enter" ''
-    #!${prefix}/nix/var/nix/profiles/default/bin/bash
-    PATH=/nix/var/nix/profiles/default/bin:$PATH exec bash
-  '';
+  targetPkgs = import <nixpkgs> { system = targetSystem; };
+  recoveryEnv = import ./recoveryEnv.nix { inherit targetPkgs; };
+
+  prefix = "/data/local/tmp/nix-chroot";
 in
 
 rec {
-  targetPkgs = import <nixpkgs> { system = targetSystem; };
-  recoveryEnv = import ./recoveryEnv.nix { inherit targetPkgs; };
+  enterScript = pkgs.writeScript "enter" ''
+    #!/bin/sh
+
+    for dir in proc data ; do
+      mkdir -p ${prefix}/$dir
+
+      # Don't bind again if it's already mounted
+      if ! grep ${prefix}/$dir /proc/mounts > /dev/null ; then
+        mount -o bind /$dir ${prefix}/$dir
+      fi
+    done
+
+    PATH=/nix/var/nix/profiles/default/bin:$PATH chroot ${prefix} bash
+
+    ${prefix}/cleanup
+  '';
+
+  cleanupScript = pkgs.writeScript "cleanup" ''
+    #!/bin/sh
+
+    for dir in ${prefix}/* ; do
+      if grep $dir /proc/mounts > /dev/null ; then
+        umount $dir
+      fi
+    done
+  '';
+
+  removalScript = pkgs.writeScript "remove" ''
+    #!/bin/sh
+    ${prefix}/cleanup
+
+    if grep ${prefix} /proc/mounts > /dev/null ; then
+      echo Error: There is still a mount active under ${prefix}, refusing to delete anything.
+      exit 1
+    else
+      rm -rf ${prefix}
+    fi
+  '';
 
   adbScriptBin = name: script: pkgs.writeShellScriptBin name (
     (if pkgs ? android-tools then ''
@@ -25,13 +60,10 @@ rec {
     '') + script);
 
   installCmd = adbScriptBin "installCmd" ''
-    adb shell mkdir /nix 2>/dev/null && \
-    adb shell mount -t tmpfs tmpfs /nix || \
-    { echo "/nix already exists. Files will been dirty-copied over the old Nix store closure."
-      echo "This is not necessarily an issue if you've run this before."
-      echo "Giving you two seconds to cancel.."
-      sleep 2
-    }
+    if adb shell ls -d ${prefix} ; then
+      echo Error: Nix environment has been installed already. Remove it using the removeCmd.
+      exit 1
+    fi
 
     tmpdir="$(mktemp -d)"
 
@@ -39,24 +71,27 @@ rec {
     nix-env --store "$tmpdir" -i ${recoveryEnv} -p "$tmpdir"/nix/var/nix/profiles/default --extra-substituters "auto?trusted=1"
 
     # Copy Nix store over to the device
-    adb shell mount -o remount,size=4G /tmp
+    adb shell mkdir -p ${prefix}
     time tar cf - -C "$tmpdir" nix/ | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
 
     chmod -R +w "$tmpdir" && rm -r "$tmpdir"
 
     # Provide handy script to enter an env with Nix
-    adb push ${enterScript} ${prefix}/nix/enter
-    adb shell chmod +x /nix/enter
-    echo 'Nix has been installed, you can now run `adb shell` and then `/nix/enter` to get a Nix environment'
+    adb push ${enterScript} ${prefix}/enter
+    adb push ${cleanupScript} ${prefix}/cleanup
+    adb push ${removalScript} ${prefix}/remove
+    adb shell chmod +x ${prefix}/enter
+    adb shell chmod +x ${prefix}/cleanup
+    adb shell chmod +x ${prefix}/remove
+    echo 'Nix has been installed, you can now run `adb shell` and then `${prefix}/enter` to get a Nix environment'
 
     # Fake `/etc/passwd` to make SSH work
-    adb shell 'echo "root:x:0:0::/:" > /etc/passwd'
+    adb shell 'mkdir -p ${prefix}/etc/'
+    adb shell 'echo "root:x:0:0::/:" > ${prefix}/etc/passwd'
   '';
 
   removeCmd = adbScriptBin "removeCmd" ''
-    adb shell umount ${prefix}/nix
-    adb shell rmdir ${prefix}/nix
-    adb shell rm ${prefix}/etc/passwd
+    adb shell sh ${prefix}/remove
 
     echo "All traces of Nix removed."
   '';
