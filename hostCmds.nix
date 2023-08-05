@@ -16,7 +16,7 @@ rec {
   enterScript = pkgs.writeScript "enter" ''
     #!/bin/sh
 
-    for dir in proc data ; do
+    for dir in proc dev data ; do
       mkdir -p ${prefix}/$dir
 
       # Don't bind again if it's already mounted
