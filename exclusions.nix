@@ -3,7 +3,7 @@
   "data/*/app_tmpdir/mozilla-temp-*"
   "**/cache/"
   "data/com.google.android.apps.docs/"
-  "data/com.spotify.music/files/spotifycache/Storage/"
+  "data/com.spotify.music/files/spotifycache/"
   "data/com.termux.nix/files/"
   "data/com.termux/files/"
   "**/org.fdroid.fdroid/files/*.apk" # /data/data/... as well as /data/media/0/Android/...
