@@ -24,4 +24,5 @@
   "media/0/Movies/"
   "media/0/Kiwix/"
   "system/package_cache/"
+  "local/tmp" # Temporary files; you should not be putting data here that you care about keeping
 ]
