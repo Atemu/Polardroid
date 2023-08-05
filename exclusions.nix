@@ -23,6 +23,7 @@
   "media/0/DCIM/.thumbnails/"
   "media/0/Movies/"
   "media/0/Kiwix/"
+  "user_de/0/com.android.packageinstaller" # Temporary files for the installer
   "system/package_cache/"
   "local/tmp" # Temporary files; you should not be putting data here that you care about keeping
 ]
