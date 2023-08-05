@@ -22,5 +22,5 @@
   "media/0/DCIM/.thumbnails/"
   "media/0/Movies/"
   "media/0/Kiwix/"
-  "system/package_cache/1/"
+  "system/package_cache/"
 ]
