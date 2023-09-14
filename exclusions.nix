@@ -20,7 +20,7 @@
   "media/0/Android/data/net.osmand.plus/files/*.obf" # Replacable map tiles
   "media/0/Android/data/net.osmand.plus/files/*/*.obf" # Replacable map tiles
   "media/0/Android/data/org.fitchfamily.android.gsmlocation" # Just a local snapshot of an online DB
-  "media/0/DCIM/.thumbnails/"
+  "media/0/DCIM/"
   "media/0/Movies/"
   "media/0/Kiwix/"
   "user_de/0/com.android.packageinstaller" # Temporary files for the installer
