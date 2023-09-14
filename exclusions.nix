@@ -9,7 +9,7 @@
   "**/org.fdroid.fdroid/files/*.apk" # /data/data/... as well as /data/media/0/Android/...
   "data/com.aurora.store/files/Downloads/"
   "data/air.de.fahren_lernen.app/de.fahren-lernen.app/Local Store/"
-  "data/app.organicmaps/files/*/*.mwm" # Replacable map tiles
+  "media/0/Android/data/app.organicmaps/files/*/*.mwm" # Replacable map tiles
   "media/0/Android/media/btools.routingapp/" # Downloadable segments; replacable
   "data/com.google.android.apps.docs.editors.*" # All online anyways
   "data/com.simplemobiletools.gallery.pro/files/storage/"
