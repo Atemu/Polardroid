@@ -7,7 +7,7 @@
   "data/com.termux.nix/files/"
   "data/com.termux/files/"
   "**/org.fdroid.fdroid/files/*.apk" # /data/data/... as well as /data/media/0/Android/...
-  "data/com.aurora.store/files/Downloads/"
+  "media/0/Android/data/com.aurora.store/files/Downloads/"
   "data/air.de.fahren_lernen.app/de.fahren-lernen.app/Local Store/"
   "media/0/Android/data/app.organicmaps/files/*/*.mwm" # Replacable map tiles
   "media/0/Android/media/btools.routingapp/" # Downloadable segments; replacable
