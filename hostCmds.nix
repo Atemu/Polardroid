@@ -10,6 +10,22 @@ let
 
   # TODO make non-tmpfs installation work again
   useTmpfs = true;
+
+  sshdConfig = (import <nixpkgs/nixos> {
+    configuration.services.openssh = {
+      enable = true;
+      settings = {
+        PermitRootLogin = "no";
+        PasswordAuthentication = false;
+      };
+      hostKeys = [ ];
+    };
+  }).config.environment.etc."ssh/sshd_config".source;
+  sshdConfigPatched = pkgs.runCommand "sshdConfigPatched" { } ''
+    substitute ${sshdConfig} $out --replace "UsePAM yes" ""
+  '';
+  sshdWrapperName = "sshd-for-adb";
+  sshdWrapper = pkgs.writeShellScript sshdWrapperName ''exec ${pkgs.openssh}/bin/sshd "$@"'';
 in
 
 rec {
@@ -102,26 +118,36 @@ rec {
   '');
 
   # One step because you only need to run this once and it works from there on
-  runSshd = pkgs.writeShellScriptBin "runSshd" ''
+  setupSsh = pkgs.writeShellScriptBin "setupSsh" ''
     echo 'Forwarding SSH port to host'
     adb reverse tcp:4222 tcp:4222
 
-    echo 'Need to elevate privileges to run sshd'
-    sudo echo "Received privileges!" || exit 1
+    tmpdir=$(mktemp -d)
+
+    ${getBin pkgs.openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/client-key > /dev/null
+    ${getBin pkgs.openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/host-key > /dev/null
+
+    adb shell mkdir -p ${prefix}/.ssh/
+    adb push $tmpdir/client-key* ${prefix}/.ssh/
+    # adb push $tmpdir/host-key.pub ${prefix}/.ssh/known_hosts
+
+    # Write sshd_config to $tmpdir
     echo 'Starting new SSHD'
-    sudo ${pkgs.openssh}/bin/sshd -D -f /etc/ssh/sshd_config -p 4222 &
+    ${sshdWrapper} -D -f ${sshdConfigPatched} -p 4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
     pid=$!
 
     USER="''${USER:=<hostusername>}"
 
     echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p 4222\` from the device"
-    echo 'To stop the sshd, run `sudo kill' $pid'`.'
+    echo 'To stop this sshd, run `kill' $pid'`.'
   '';
 
-  removeForwards = pkgs.writeShellScriptBin "removeForwards" ''
+  tearDownSsh = pkgs.writeShellScriptBin "tearDownSsh" ''
     echo 'Removing all adb port forwards'
     adb forward --remove-all
     adb reverse --remove-all
+
+    kill $(pidof ${sshdWrapperName})
   '';
 
   hostCmds = pkgs.buildEnv {
@@ -129,8 +155,8 @@ rec {
     paths = [
       installCmd
       removeCmd
-      runSshd
-      removeForwards
+      setupSsh
+      tearDownSsh
     ];
   };
 }
