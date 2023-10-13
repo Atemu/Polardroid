@@ -63,7 +63,7 @@ rec {
     '') + script);
 
   installCmd = adbScriptBin "installCmd" (''
-    if adb shell ls -d ${prefix} 2>&1 > /dev/null ; then
+    if adb shell 'ls -d ${prefix} 2>&1 > /dev/null' ; then
       echo Error: Nix environment has been installed already. Remove it using the removeCmd.
       exit 1
     fi
