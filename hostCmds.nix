@@ -68,19 +68,14 @@ rec {
       exit 1
     fi
 
-    tmpdir="$(mktemp -d)"
-
-    # Create new Nix store in tmpdir on host
-    nix-env --store "$tmpdir" -i ${recoveryEnv} -p "$tmpdir"/nix/var/nix/profiles/default --extra-substituters "auto?trusted=1"
-
     # Copy Nix store over to the device
     adb shell mkdir -p ${prefix}
   '' + optionalString useTmpfs ''
     adb shell mount -t tmpfs tmpfs ${prefix}
   '' + ''
-    time tar cf - -C "$tmpdir" nix/ | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
-
-    chmod -R +w "$tmpdir" && rm -r "$tmpdir"
+    nix-store --query --requisites ${recoveryEnv} | cut -c 2- \
+      | tar cf - -C / --files-from=/dev/stdin | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
+    adb shell "mkdir -p ${prefix}/nix/var/nix/profiles/ && ln -s ${recoveryEnv} ${prefix}/nix/var/nix/profiles/default"
 
     # Provide handy script to enter an env with Nix
     adb push ${enterScript} ${prefix}/enter
