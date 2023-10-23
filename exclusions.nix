@@ -22,6 +22,7 @@
   "media/0/Android/data/org.fitchfamily.android.gsmlocation" # Just a local snapshot of an online DB
   "media/0/Backups/" # Handled in other ways
   "media/0/Signal/Backups/" # Handled in other ways
+  "data/org.thoughtcrime.securesms/"
   "media/0/DCIM/"
   "media/0/Movies/"
   "media/0/Kiwix/"
