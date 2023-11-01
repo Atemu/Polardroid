@@ -132,7 +132,7 @@ rec {
     adb shell chmod 600 ${prefix}/.ssh/client-key*
     adb push ${pkgs.writeText "config" "IdentityFile ~/.ssh/client-key"} ${prefix}/.ssh/config
 
-    echo -n "[127.0.0.1]:4222 ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/client-key.pub)" > $tmpdir/known_hosts
+    echo "[127.0.0.1]:4222 ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
     adb push $tmpdir/known_hosts ${prefix}/.ssh/
 
     echo 'Starting new SSHD'
