@@ -24,8 +24,6 @@ let
   sshdConfigPatched = pkgs.runCommand "sshdConfigPatched" { } ''
     substitute ${sshdConfig} $out --replace "UsePAM yes" ""
   '';
-  sshdWrapperName = "sshd-for-adb";
-  sshdWrapper = pkgs.writeShellScript sshdWrapperName ''exec ${pkgs.openssh}/bin/sshd "$@"'';
 in
 
 rec {
@@ -136,13 +134,12 @@ rec {
     adb push $tmpdir/known_hosts ${prefix}/.ssh/
 
     echo 'Starting new SSHD'
-    ${sshdWrapper} -D -f ${sshdConfigPatched} -p 4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
-    pid=$!
+    ${pkgs.openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
 
     USER="''${USER:=<hostusername>}"
 
     echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p 4222\` from the device"
-    echo 'To stop this sshd, run `kill' $pid'`.'
+    echo 'To stop this sshd and remove the forwards, run the `tearDownSshd` script.'
   '';
 
   tearDownSsh = pkgs.writeShellScriptBin "tearDownSsh" ''
@@ -150,7 +147,9 @@ rec {
     adb forward --remove-all
     adb reverse --remove-all
 
-    kill $(pidof ${sshdWrapperName})
+    adb shell rm -r ${prefix}/.ssh
+
+    pkill -f Port=4222
   '';
 
   hostCmds = pkgs.buildEnv {
