@@ -127,9 +127,13 @@ rec {
     ${getBin pkgs.openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/client-key > /dev/null
     ${getBin pkgs.openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/host-key > /dev/null
 
+    adb shell mkdir -p ${prefix}/.ssh/
+    adb push $tmpdir/client-key* ${prefix}/.ssh/
+    # adb push $tmpdir/host-key.pub ${prefix}/.ssh/known_hosts
+
     # Write sshd_config to $tmpdir
     echo 'Starting new SSHD'
-    ${sshdWrapper} -D -f ${sshdConfigPatched} -p 4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key -o PubkeyAuthentication=yes &
+    ${sshdWrapper} -D -f ${sshdConfigPatched} -p 4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
     pid=$!
 
     USER="''${USER:=<hostusername>}"
