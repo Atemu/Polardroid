@@ -10,6 +10,20 @@ let
 
   # TODO make non-tmpfs installation work again
   useTmpfs = true;
+
+  sshdConfig = (import <nixpkgs/nixos> {
+    configuration.services.openssh = {
+      enable = true;
+      settings = {
+        PermitRootLogin = "no";
+        PasswordAuthentication = false;
+      };
+      hostKeys = [ ];
+    };
+  }).config.environment.etc."ssh/sshd_config".source;
+  sshdConfigPatched = pkgs.runCommand "sshdConfigPatched" { } ''
+    substitute ${sshdConfig} $out --replace "UsePAM yes" ""
+  '';
 in
 
 rec {
@@ -63,24 +77,19 @@ rec {
     '') + script);
 
   installCmd = adbScriptBin "installCmd" (''
-    if adb shell ls -d ${prefix} 2>&1 > /dev/null ; then
+    if adb shell 'ls -d ${prefix} 2>&1 > /dev/null' ; then
       echo Error: Nix environment has been installed already. Remove it using the removeCmd.
       exit 1
     fi
-
-    tmpdir="$(mktemp -d)"
-
-    # Create new Nix store in tmpdir on host
-    nix-env --store "$tmpdir" -i ${recoveryEnv} -p "$tmpdir"/nix/var/nix/profiles/default --extra-substituters "auto?trusted=1"
 
     # Copy Nix store over to the device
     adb shell mkdir -p ${prefix}
   '' + optionalString useTmpfs ''
     adb shell mount -t tmpfs tmpfs ${prefix}
   '' + ''
-    time tar cf - -C "$tmpdir" nix/ | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
-
-    chmod -R +w "$tmpdir" && rm -r "$tmpdir"
+    nix-store --query --requisites ${recoveryEnv} | cut -c 2- \
+      | tar cf - -C / --files-from=/dev/stdin | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
+    adb shell "mkdir -p ${prefix}/nix/var/nix/profiles/ && ln -s ${recoveryEnv} ${prefix}/nix/var/nix/profiles/default"
 
     # Provide handy script to enter an env with Nix
     adb push ${enterScript} ${prefix}/enter
@@ -107,26 +116,40 @@ rec {
   '');
 
   # One step because you only need to run this once and it works from there on
-  runSshd = pkgs.writeShellScriptBin "runSshd" ''
+  setupSsh = pkgs.writeShellScriptBin "setupSsh" ''
     echo 'Forwarding SSH port to host'
     adb reverse tcp:4222 tcp:4222
 
-    echo 'Need to elevate privileges to run sshd'
-    sudo echo "Received privileges!" || exit 1
+    tmpdir=$(mktemp -d)
+
+    ${getBin pkgs.openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/client-key > /dev/null
+    ${getBin pkgs.openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/host-key > /dev/null
+
+    adb shell mkdir -p ${prefix}/.ssh/
+    adb push $tmpdir/client-key* ${prefix}/.ssh/
+    adb shell chmod 600 ${prefix}/.ssh/client-key*
+    adb push ${pkgs.writeText "config" "IdentityFile ~/.ssh/client-key"} ${prefix}/.ssh/config
+
+    echo "[127.0.0.1]:4222 ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
+    adb push $tmpdir/known_hosts ${prefix}/.ssh/
+
     echo 'Starting new SSHD'
-    sudo ${pkgs.openssh}/bin/sshd -D -f /etc/ssh/sshd_config -p 4222 &
-    pid=$!
+    ${pkgs.openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
 
     USER="''${USER:=<hostusername>}"
 
     echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p 4222\` from the device"
-    echo 'To stop the sshd, run `sudo kill' $pid'`.'
+    echo 'To stop this sshd and remove the forwards, run the `tearDownSshd` script.'
   '';
 
-  removeForwards = pkgs.writeShellScriptBin "removeForwards" ''
+  tearDownSsh = pkgs.writeShellScriptBin "tearDownSsh" ''
     echo 'Removing all adb port forwards'
     adb forward --remove-all
     adb reverse --remove-all
+
+    adb shell rm -r ${prefix}/.ssh
+
+    pkill -f Port=4222
   '';
 
   hostCmds = pkgs.buildEnv {
@@ -134,8 +157,8 @@ rec {
     paths = [
       installCmd
       removeCmd
-      runSshd
-      removeForwards
+      setupSsh
+      tearDownSsh
     ];
   };
 }
