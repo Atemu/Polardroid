@@ -10,7 +10,7 @@
     progress = true;
   }
 , extraBorgArgs ? [ ]
-, borgRepo ? [ "'ssh://atemu@127.0.0.1:4222/Users/atemu/Backups/Phone::FP4.data.{now}'" ]
+, borgRepo ? [ "'ssh://atemu@127.0.0.1:4222/Users/atemu/Backups/Android/Data::FP4.data.{now}'" ]
 , borgPath ? "/data"
 , extraNcduArgs ? [ ]
 }:
