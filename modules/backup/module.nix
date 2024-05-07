@@ -12,8 +12,17 @@ in
 
 {
   options.backup = {
+    path = lib.mkOption {
+      description = ''
+        The path to back up on the device.
+      '';
+      default = "/data";
+    };
     name = lib.mkOption {
       default = "{now}";
+      description = ''
+        The name of the snapshot. See the `borg create` documentation.
+      '';
     };
     borg = {
       args = lib.mkOption {
@@ -41,15 +50,17 @@ in
       package = lib.mkPackageOption targetPkgs "borgbackup" { };
     };
     ncdu = {
+      package = lib.mkPackageOption targetPkgs "ncdu" { };
       args = lib.mkOption { };
+      env = lib.mkOption {
+        description = ''
+          The set of environment variables passed to ncdu invocations.
+        '';
+        type = lib.types.attrs;
+        default = { };
+      };
     };
 
-    path = lib.mkOption {
-      description = ''
-        The path to back up on the device.
-      '';
-      default = "/data";
-    };
   };
 
   config = {
@@ -62,7 +73,18 @@ in
       crossPkgs.writeShellScriptBin "borgCmd" ''
         set -o allexport # Export the following env vars
         ${lib.toShellVars env}
-        exec ${exe} ${argString} ${repo}::${this.name} "$@"
+        exec ${exe} ${argString} ${repo}::${this.name} ${this.path} "$@"
+      '';
+    recovery.ncduCmd =
+      let
+        inherit (this.ncdu) package args env;
+        exe = lib.getExe package;
+        argString = lib.cli.toGNUCommandLineShell { } args;
+      in
+      crossPkgs.writeShellScriptBin "ncduCmd" ''
+        set -o allexport # Export the following env vars
+        ${lib.toShellVars env}
+        exec ${exe} ${argString} ${this.path} "$@"
       '';
   };
 }
