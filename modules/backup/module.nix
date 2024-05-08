@@ -24,6 +24,14 @@ in
         The name of the snapshot. See the `borg create` documentation.
       '';
     };
+    exclusions = lib.mkOption {
+      type = with lib.types; listOf str; # TODO check via regex?
+      default = [ ];
+      # apply = lib.removeSuffix "/"; # Normalise the paths
+      description = ''
+        Path patterns as described in `borg help patterns`. Each one is supplied to a `--exclude` argument.
+      '';
+    };
     borg = {
       args = lib.mkOption {
         type = lib.types.attrs; # TODO is there a more accurate type here?
@@ -48,6 +56,15 @@ in
         default = { };
       };
       package = lib.mkPackageOption targetPkgs "borgbackup" { };
+      patterns = lib.mkOption {
+        type = with lib.types; nullOr (either str path);
+        description = ''
+          A string of patterns or a patterns file according to Borg's patterns.lst file format.
+
+          Note that only Borg understands these patterns. Use {option}`backup.exclusions` for generic exclusions.
+        '';
+        default = null;
+      };
     };
     ncdu = {
       package = lib.mkPackageOption targetPkgs "ncdu" { };
@@ -64,6 +81,12 @@ in
   };
 
   config = {
+    backup = {
+      borg.args = {
+        exclude = this.exclusions;
+        patterns-from = lib.mkIf (this.borg.patterns != null) this.borg.patterns; # FIXME mkIf doesn't work here?!
+      };
+    };
     recovery.borgCmd =
       let
         inherit (this.borg) args repo env package;
