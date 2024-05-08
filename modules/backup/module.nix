@@ -84,7 +84,7 @@ in
     backup = {
       borg.args = {
         exclude = this.exclusions;
-        patterns-from = lib.mkIf (this.borg.patterns != null) this.borg.patterns; # FIXME mkIf doesn't work here?!
+        patterns-from = this.borg.patterns;
       };
     };
     recovery.borgCmd =
