@@ -63,5 +63,11 @@ in
         ] ++ this.packages;
       };
     };
+    prefix = mkOption {
+      description = ''
+        The location where the recovery environment is installed on the device.
+      '';
+      default = "/data/local/tmp/nix-chroot"; # TODO default /tmp if with for tmpfs
+    };
   };
 }

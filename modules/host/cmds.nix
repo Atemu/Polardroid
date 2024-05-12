@@ -1,12 +1,19 @@
-{ pkgs ? import <nixpkgs> { }, targetSystem ? "aarch64-linux" }:
+{
+  lib,
+  openssh,
+  writeShellScriptBin,
+  writeScript,
+  writeText,
+  runCommand,
+  android-tools,
+  pv,
+
+  prefix,
+  recoveryEnv,
+}:
 
 let
-  inherit (pkgs.lib) getExe getBin optionalString;
-
-  targetPkgs = import <nixpkgs> { system = targetSystem; };
-  recoveryEnv = import ./recoveryEnv.nix { inherit targetPkgs; };
-
-  prefix = "/data/local/tmp/nix-chroot";
+  inherit (lib) getExe getBin optionalString;
 
   # TODO make non-tmpfs installation work again
   useTmpfs = true;
@@ -21,13 +28,13 @@ let
       hostKeys = [ ];
     };
   }).config.environment.etc."ssh/sshd_config".source;
-  sshdConfigPatched = pkgs.runCommand "sshdConfigPatched" { } ''
+  sshdConfigPatched = runCommand "sshdConfigPatched" { } ''
     substitute ${sshdConfig} $out --replace "UsePAM yes" ""
   '';
 in
 
 rec {
-  enterScript = pkgs.writeScript "enter" ''
+  enterScript = writeScript "enter" ''
     #!/bin/sh
 
     for dir in proc dev data ; do
@@ -44,7 +51,7 @@ rec {
     ${prefix}/cleanup
   '';
 
-  cleanupScript = pkgs.writeScript "cleanup" ''
+  cleanupScript = writeScript "cleanup" ''
     #!/bin/sh
 
     for dir in ${prefix}/* ; do
@@ -54,7 +61,7 @@ rec {
     done
   '';
 
-  removalScript = pkgs.writeScript "remove" ''
+  removalScript = writeScript "remove" ''
     #!/bin/sh
     ${prefix}/cleanup
 
@@ -66,15 +73,11 @@ rec {
     fi
   '';
 
-  adbScriptBin = name: script: pkgs.writeShellScriptBin name (
-    (if pkgs ? android-tools then ''
-      PATH=${pkgs.android-tools}/bin/:$PATH
-    '' else ''
-      command -V adb || {
-        echo 'You need to build this with nixpkgs >= 21.11 or have ADB in your PATH. You can install adb via `programs.adb.enable` on NixOS'
-        exit 1
-      }
-    '') + script);
+  adbScriptBin = name: script: writeShellScriptBin name ''
+      PATH=${android-tools}/bin/:$PATH
+
+      ${script}
+  '';
 
   installCmd = adbScriptBin "installCmd" (''
     if adb shell 'ls -d ${prefix} 2>&1 > /dev/null' ; then
@@ -88,7 +91,7 @@ rec {
     adb shell mount -t tmpfs tmpfs ${prefix}
   '' + ''
     nix-store --query --requisites ${recoveryEnv} | cut -c 2- \
-      | tar cf - -C / --files-from=/dev/stdin | ${getExe pkgs.pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
+      | tar cf - -C / --files-from=/dev/stdin | ${getExe pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
     adb shell "mkdir -p ${prefix}/nix/var/nix/profiles/ && ln -s ${recoveryEnv} ${prefix}/nix/var/nix/profiles/default"
 
     # Provide handy script to enter an env with Nix
@@ -116,25 +119,25 @@ rec {
   '');
 
   # One step because you only need to run this once and it works from there on
-  setupSsh = pkgs.writeShellScriptBin "setupSsh" ''
+  setupSsh = writeShellScriptBin "setupSsh" ''
     echo 'Forwarding SSH port to host'
     adb reverse tcp:4222 tcp:4222
 
     tmpdir=$(mktemp -d)
 
-    ${getBin pkgs.openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/client-key > /dev/null
-    ${getBin pkgs.openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/host-key > /dev/null
+    ${getBin openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/client-key > /dev/null
+    ${getBin openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/host-key > /dev/null
 
     adb shell mkdir -p ${prefix}/.ssh/
     adb push $tmpdir/client-key* ${prefix}/.ssh/
     adb shell chmod 600 ${prefix}/.ssh/client-key*
-    adb push ${pkgs.writeText "config" "IdentityFile ~/.ssh/client-key"} ${prefix}/.ssh/config
+    adb push ${writeText "config" "IdentityFile ~/.ssh/client-key"} ${prefix}/.ssh/config
 
     echo "[127.0.0.1]:4222 ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
     adb push $tmpdir/known_hosts ${prefix}/.ssh/
 
     echo 'Starting new SSHD'
-    ${pkgs.openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
+    ${openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
 
     USER="''${USER:=<hostusername>}"
 
@@ -142,7 +145,7 @@ rec {
     echo 'To stop this sshd and remove the forwards, run the `tearDownSshd` script.'
   '';
 
-  tearDownSsh = pkgs.writeShellScriptBin "tearDownSsh" ''
+  tearDownSsh = writeShellScriptBin "tearDownSsh" ''
     echo 'Removing all adb port forwards'
     adb forward --remove-all
     adb reverse --remove-all
@@ -151,14 +154,4 @@ rec {
 
     pkill -f Port=4222
   '';
-
-  hostCmds = pkgs.buildEnv {
-    name = "hostCmds";
-    paths = [
-      installCmd
-      removeCmd
-      setupSsh
-      tearDownSsh
-    ];
-  };
 }
