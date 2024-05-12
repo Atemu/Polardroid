@@ -30,7 +30,7 @@ in
     };
     borg.repository = lib.mkOption {
       type = lib.types.str;
-      default = builtins.throw "You must specify a `host.borg.repository`!";
+      default = builtins.throw "You must specify a `host.borg.repository` in order to use the {option}`backup.enable` functionality.";
       description = ''
         The path to the borg repository on the host machine to store backups in.
       '';

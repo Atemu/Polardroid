@@ -12,6 +12,13 @@ in
 
 {
   options.backup = {
+    enable = lib.mkEnableOption ''
+      the backup functionality.
+
+      This option exists because this project could also be used for just
+      installing a temporary Nix environment onto your phone which you may not
+      want to have to configure the backup part of this project for.
+    '' // lib.mkOption { default = true; };
     path = lib.mkOption {
       description = ''
         The path to back up on the device.
