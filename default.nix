@@ -3,7 +3,8 @@
   lib ? pkgs.lib,
 }:
 
-lib.evalModules {
+let
+  eval = lib.evalModules {
   modules =
     lib.mapAttrsToList (n: v: ./modules + "/${n}/module.nix") (builtins.readDir ./modules)
     ++ [
@@ -17,4 +18,8 @@ lib.evalModules {
         }
       )
     ];
+};
+in
+eval.config.host.env // {
+  passthru = eval;
 }
