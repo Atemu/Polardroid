@@ -1,6 +1,7 @@
 {
   pkgs ? import <nixpkgs> { },
   lib ? pkgs.lib,
+  configuration ? { },
 }:
 
 let
@@ -17,6 +18,7 @@ let
           };
         }
       )
+      configuration
     ];
 };
 in
