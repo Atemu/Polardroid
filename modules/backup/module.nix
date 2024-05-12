@@ -27,7 +27,7 @@ in
     exclusions = lib.mkOption {
       type = with lib.types; listOf str; # TODO check via regex?
       default = [ ];
-      # apply = lib.removeSuffix "/"; # Normalise the paths
+      apply = map (lib.removeSuffix "/"); # Normalise the paths
       description = ''
         Path patterns as described in `borg help patterns`. Each one is supplied to a `--exclude` argument.
       '';
