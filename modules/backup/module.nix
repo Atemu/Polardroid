@@ -68,7 +68,10 @@ in
     };
     ncdu = {
       package = lib.mkPackageOption targetPkgs "ncdu" { };
-      args = lib.mkOption { };
+      args = lib.mkOption {
+        type = with lib.types; attrs;
+        default = { };
+      };
       env = lib.mkOption {
         description = ''
           The set of environment variables passed to ncdu invocations.
@@ -77,7 +80,6 @@ in
         default = { };
       };
     };
-
   };
 
   config = {
@@ -89,7 +91,12 @@ in
     };
     recovery.borgCmd =
       let
-        inherit (this.borg) args repo env package;
+        inherit (this.borg)
+          args
+          repo
+          env
+          package
+          ;
         exe = lib.getExe package;
         argString = lib.cli.toGNUCommandLineShell { } args;
       in
