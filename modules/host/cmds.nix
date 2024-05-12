@@ -10,6 +10,7 @@
 
   prefix,
   recoveryEnv,
+  sshPort,
 }:
 
 let
@@ -121,7 +122,7 @@ rec {
   # One step because you only need to run this once and it works from there on
   setupSsh = writeShellScriptBin "setupSsh" ''
     echo 'Forwarding SSH port to host'
-    adb reverse tcp:4222 tcp:4222
+    adb reverse tcp:${sshPort} tcp:${sshPort}
 
     tmpdir=$(mktemp -d)
 
@@ -133,15 +134,15 @@ rec {
     adb shell chmod 600 ${prefix}/.ssh/client-key*
     adb push ${writeText "config" "IdentityFile ~/.ssh/client-key"} ${prefix}/.ssh/config
 
-    echo "[127.0.0.1]:4222 ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
+    echo "[127.0.0.1]:${sshPort} ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
     adb push $tmpdir/known_hosts ${prefix}/.ssh/
 
     echo 'Starting new SSHD'
-    ${openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=4222 -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
+    ${openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=${sshPort} -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
 
     USER="''${USER:=<hostusername>}"
 
-    echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p 4222\` from the device"
+    echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p ${sshPort}\` from the device"
     echo 'To stop this sshd and remove the forwards, run the `tearDownSshd` script.'
   '';
 
@@ -152,6 +153,6 @@ rec {
 
     adb shell rm -r ${prefix}/.ssh
 
-    pkill -f Port=4222
+    pkill -f Port=${sshPort}
   '';
 }
