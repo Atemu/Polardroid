@@ -51,7 +51,7 @@ in
         description = ''
           The URI to the repository on the host machine. This gets set automatically, you should not have to edit this.
         '';
-        default = "'ssh://atemu@127.0.0.1:4222/Users/atemu/Backups/Android/Data::FP4.data.{now}'"; # TODO
+        default = builtins.throw "No borg repo specified, the host module should have done that!";
       };
       env = lib.mkOption {
         description = ''
