@@ -32,6 +32,11 @@ in
         Path patterns as described in `borg help patterns`. Each one is supplied to a `--exclude` argument.
       '';
     };
+    recommendedExclusions = lib.mkEnableOption ''
+      a set of default exclusions which cover states that are replaceable, ephemeral, not able to be backed up and caches.
+
+      Currently, this also includes media files which are assumed to be backed up separately which is subject to change.
+    '';
     borg = {
       args = lib.mkOption {
         type = lib.types.attrs; # TODO is there a more accurate type here?
@@ -88,6 +93,7 @@ in
         exclude = this.exclusions;
         patterns-from = this.borg.patterns;
       };
+      exclusions = lib.mkIf this.recommendedExclusions (import ./exclusions.nix);
     };
     recovery.borgCmd =
       let
