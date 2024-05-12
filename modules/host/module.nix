@@ -16,7 +16,18 @@ in
 
 {
   options.host = {
-    user = lib.mkOption { default = ""; }; # TODO default to the current username
+    user = lib.mkOption {
+      type = lib.types.str;
+      default =
+        let
+          user = builtins.getEnv "USER";
+        in
+        lib.warn ''No user name specified, impurely assuming "${user}" from the environment.'' user;
+      description = ''
+        The username used for actions on the host. This should be set to the
+        username of the user you intend to run the host scripts as.
+      '';
+    };
     borg.repository = lib.mkOption {
       # TODO what would be the default for this?
       default = "";
