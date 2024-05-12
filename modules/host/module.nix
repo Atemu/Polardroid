@@ -17,7 +17,9 @@ in
   options.host = {
     user = lib.mkOption { default = ""; };
     ssh = {
-      enable = lib.mkEnableOption "reverse SSH access from the device to the host computer";
+      enable =
+        lib.mkEnableOption "reverse SSH access from the device to the host computer"
+        // lib.mkOption { default = true; };
     };
     env = lib.mkOption {
       internal = true;
