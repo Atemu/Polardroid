@@ -29,8 +29,11 @@ in
       '';
     };
     borg.repository = lib.mkOption {
-      # TODO what would be the default for this?
-      default = "";
+      type = lib.types.str;
+      default = builtins.throw "You must specify a `host.borg.repository`!";
+      description = ''
+        The path to the borg repository on the host machine to store backups in.
+      '';
       apply = lib.removePrefix "/";
     };
     ssh = {
