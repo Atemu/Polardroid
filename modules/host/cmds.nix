@@ -21,6 +21,7 @@ let
 
   sshdConfig =
     (import <nixpkgs/nixos> {
+      configuration.system.stateVersion = lib.versions.majorMinor lib.version; # not relevant
       configuration.services.openssh = {
         enable = true;
         settings = {
