@@ -27,12 +27,6 @@ in
       '';
       default = "/data";
     };
-    name = lib.mkOption {
-      default = "{now}";
-      description = ''
-        The name of the snapshot. See the `borg create` documentation.
-      '';
-    };
     exclusions = lib.mkOption {
       type = with lib.types; listOf str; # TODO check via regex?
       default = [ ];
@@ -68,6 +62,12 @@ in
         '';
         type = lib.types.attrs;
         default = { };
+      };
+      name = lib.mkOption {
+        default = "{now}";
+        description = ''
+          The name of the snapshot. See the `borg create` documentation.
+        '';
       };
       package = lib.mkPackageOption targetPkgs "borgbackup" { };
       patterns = lib.mkOption {
@@ -110,6 +110,7 @@ in
           args
           repo
           env
+          name
           package
           ;
         exe = lib.getExe package;
@@ -118,7 +119,7 @@ in
       crossPkgs.writeShellScriptBin "borgCmd" ''
         set -o allexport # Export the following env vars
         ${lib.toShellVars env}
-        exec ${exe} ${argString} ${repo}::${this.name} ${this.path} "$@"
+        exec ${exe} ${argString} ${repo}::${name} ${this.path} "$@"
       '';
     recovery.ncduCmd =
       let
