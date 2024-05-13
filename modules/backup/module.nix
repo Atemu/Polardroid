@@ -111,9 +111,8 @@ in
           repo
           env
           name
-          package
           ;
-        exe = lib.getExe package;
+        exe = lib.getExe this.borg.package;
         argString = lib.cli.toGNUCommandLineShell { } args;
       in
       crossPkgs.writeShellScriptBin "borgCmd" ''
@@ -123,8 +122,8 @@ in
       '';
     recovery.ncduCmd =
       let
-        inherit (this.ncdu) package args env;
-        exe = lib.getExe package;
+        inherit (this.ncdu) args env;
+        exe = lib.getExe this.ncdu.package;
         argString = lib.cli.toGNUCommandLineShell { } args;
       in
       crossPkgs.writeShellScriptBin "ncduCmd" ''
