@@ -57,10 +57,12 @@ in
       internal = true;
       default = pkgs.buildEnv {
         name = "recovery";
-        paths = lib.optionals config.backup.enable [
-          this.borgCmd
-          this.ncduCmd
-        ] ++ this.packages;
+        paths =
+          lib.optionals config.backup.enable [
+            this.borgCmd
+            this.ncduCmd
+          ]
+          ++ this.packages;
       };
     };
     prefix = mkOption {
