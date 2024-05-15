@@ -119,7 +119,7 @@ in
       crossPkgs.writeShellScriptBin "borgCmd" ''
         set -o allexport # Export the following env vars
         ${lib.toShellVars env}
-        exec ${exe} ${argString} "${repo}::${name}" "${this.path}" "$@"
+        exec ${exe} create ${argString} "${repo}::${name}" "${this.path}" "$@"
       '';
     recovery.ncduCmd =
       let
