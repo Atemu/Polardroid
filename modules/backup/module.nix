@@ -100,6 +100,9 @@ in
         exclude = this.exclusions;
         patterns-from = this.borg.patterns;
       };
+      ncdu.args = {
+        exclude = this.exclusions;
+      };
       exclusions = lib.mkIf this.recommendedExclusions (import ./exclusions.nix);
     };
     recovery.borgCmd =
