@@ -97,7 +97,7 @@ in
   config = {
     backup = {
       borg.args = {
-        exclude = this.exclusions;
+        exclude = map (exclusion: "${this.path}/${exclusion}") this.exclusions;
         patterns-from = this.borg.patterns;
       };
       ncdu.args = {
