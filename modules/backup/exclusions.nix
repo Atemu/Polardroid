@@ -34,5 +34,6 @@
   "user_de/0/com.android.packageinstaller" # Temporary files for the installer
   "dalvik-cache/"
   "system/package_cache/"
+  "system_ce/0/shortcut_service/bitmaps/" # Cached bitmaps for app shortcuts
   "local/tmp" # Temporary files; you should not be putting data here that you care about keeping
 ]
