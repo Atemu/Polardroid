@@ -14,6 +14,7 @@
   "data/com.google.android.apps.docs.editors.*" # All online anyways
   "data/com.simplemobiletools.gallery.pro/files/storage/"
   "data/com.github.olga_yakovleva.rhvoice.android/app_data/" # Downloadable voices
+  "data/org.woheller69.whobird/app_filesdir/" # Downloadable models
   "media/0/0/"
   "media/0/easy xkcd/"
   "media/0/Android/data/com.spotify.music/files/spotifycache/"
