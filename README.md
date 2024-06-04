@@ -13,12 +13,12 @@ There is no support for M$ Windows. Install a proper operating system; perhaps u
 
 ## Usage
 
-1. Bring your Android device into an (ideally) read-only state with root access. See [Getting a root shell](#Getting a root shell) on how to achieve that. Ensure that you can get into `adb shell` as root and that nothing else is running.
+1. Bring your Android device into an (ideally) read-only state with root access. See [Getting a root shell](#getting-a-root-shell) on how to achieve that. Ensure that you can get into `adb shell` as root and that nothing else is running.
 2. Configure the backup according to your setup, needs and preferences using the provided options in a configuration module. It works the same way your NixOS config works on NixOS but with a different set of options.
 3. Run `nix-build --arg configuration ./path/to/your/configuration.nix`
 4. Run `installCmd` to install and then optionally `setupSsh` if you want to be able to access the host PC from the device.
 5. Follow the printed instructions to enter the shell
-6. Use the provided wrapper commands to [perform the backup](#Performing the backup)
+6. Use the provided wrapper commands to [perform the backup](#performing-the-backup)
 
 ## Getting a root shell
 
