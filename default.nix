@@ -1,7 +1,7 @@
 {
   pkgs ? import <nixpkgs> { },
   lib ? pkgs.lib,
-  configuration ? { },
+  configuration ? if builtins.pathExists ./configuration.nix then ./configuration.nix else { },
 }:
 
 let
