@@ -105,7 +105,7 @@ in
       };
       exclusions = lib.mkIf this.recommendedExclusions (import ./exclusions.nix);
     };
-    recovery.polardroid-borg =
+    device.polardroid-borg =
       let
         inherit (this.borg)
           args
@@ -121,7 +121,7 @@ in
         ${lib.toShellVars env}
         exec ${exe} create ${argString} "${repo}::${name}" "${this.path}" "$@"
       '';
-    recovery.polardroid-ncdu =
+    device.polardroid-ncdu =
       let
         inherit (this.ncdu) args env;
         exe = lib.getExe this.ncdu.package;

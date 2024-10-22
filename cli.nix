@@ -15,8 +15,8 @@
 let
   inherit (lib) getExe getBin optionalString;
 
-  prefix = eval.config.recovery.prefix;
-  recoveryEnv = eval.config.recovery.env;
+  prefix = eval.config.device.prefix;
+  deviceEnv = eval.config.device.env;
   sshPort = toString eval.config.host.ssh.port;
 
   # TODO make non-tmpfs installation work again
@@ -99,9 +99,9 @@ let
       adb shell mount -t tmpfs tmpfs ${prefix}
     ''
     + ''
-      nix-store --query --requisites ${recoveryEnv} | cut -c 2- \
+      nix-store --query --requisites ${deviceEnv} | cut -c 2- \
         | tar cf - -C / --files-from=/dev/stdin | ${getExe pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
-      adb shell "mkdir -p ${prefix}/nix/var/nix/profiles/ && ln -s ${recoveryEnv} ${prefix}/nix/var/nix/profiles/default"
+      adb shell "mkdir -p ${prefix}/nix/var/nix/profiles/ && ln -s ${deviceEnv} ${prefix}/nix/var/nix/profiles/default"
 
       # Provide handy script to enter an env with Nix
       adb push ${enterScript} ${prefix}/enter
