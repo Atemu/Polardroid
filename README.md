@@ -45,6 +45,8 @@ Note however that your recovery environment *must* support decrypting the Androi
 
 If you have Magisk installed, you may alternatively be able to reach a root shell at runtime via `su` but this project currently does not support privilege escalation via `su` yet.
 
+https://github.com/Atemu/Polardroid/issues/6
+
 ## Atomic backup/Read-only state
 
 In order to produce a backup that is integer, no process must be writing to the data while it is being backed up.  
@@ -68,7 +70,7 @@ There's a lot that can go wrong, which is why you *must* test the backup produce
 
 Restoring a backup has the same environmental requirements as producing one; you must have a root shell and no other processes writing to userdata.
 
-Restoring a backup in full is sadly not possible. It currently not yet known why but it results in a boot loop. You must selectively restore parts of userdata. In this process you can also decide which parts of your backup you actually wish to restore.
+Restoring an entire backup is sadly not possible. It currently not yet known why but it results in a boot loop (https://github.com/Atemu/Polardroid/issues/5). You must selectively restore parts of userdata. In this process you can also decide which parts of your backup you actually wish to restore.
 
 ### Restore a backup
 
