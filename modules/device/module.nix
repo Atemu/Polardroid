@@ -8,10 +8,10 @@
 
 let
   inherit (lib) mkOption;
-  this = config.recovery;
+  this = config.device;
 in
 {
-  options.recovery = {
+  options.device = {
     polardroid-borg = mkOption {
       internal = true;
       type = lib.types.package;
@@ -22,7 +22,7 @@ in
     };
     packages = mkOption {
       description = ''
-        Packages to install inside the recovery env.
+        Packages to install inside the device env.
 
         Your host system must be able to realise these derivations! If your
         target is an aarch64 phone and the drvs are not cached, you *will* need
@@ -51,7 +51,7 @@ in
     env = mkOption {
       internal = true;
       default = pkgs.buildEnv {
-        name = "recovery";
+        name = "polardroid-device-env";
         paths =
           lib.optionals config.backup.enable [
             this.polardroid-borg
@@ -62,9 +62,13 @@ in
     };
     prefix = mkOption {
       description = ''
-        The location where the recovery environment is installed on the device.
+        The path where the device environment is installed into on the device.
+
+        This does not necessarily need to be persistent but it needs to be able
+        to hold the entire device env closure.
       '';
       default = "/data/local/tmp/nix-chroot"; # TODO default /tmp if with for tmpfs
+      example = "/tmp";
     };
   };
 }
