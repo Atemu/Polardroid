@@ -7,21 +7,16 @@
 }:
 
 let
-  # backupCmds = targetPkgs.callPackage ./backupCmds.nix {
-  #   inherit (pkgs.pkgsCross.aarch64-multiplatform) writeShellScriptBin;
-  # };
-  # inherit (backupCmds) borgCmd ncduCmd;
   inherit (lib) mkOption;
   this = config.recovery;
 in
-
 {
   options.recovery = {
-    borgCmd = mkOption {
+    polardroid-borg = mkOption {
       internal = true;
       type = lib.types.package;
     };
-    ncduCmd = mkOption {
+    polardroid-ncdu = mkOption {
       internal = true;
       type = lib.types.package;
     };
@@ -59,8 +54,8 @@ in
         name = "recovery";
         paths =
           lib.optionals config.backup.enable [
-            this.borgCmd
-            this.ncduCmd
+            this.polardroid-borg
+            this.polardroid-ncdu
           ]
           ++ this.packages;
       };

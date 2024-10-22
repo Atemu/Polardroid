@@ -56,9 +56,9 @@ In order to "boot" into regular Android again, you can simply `adb reboot` or co
 
 ## Performing the backup
 
-Once you are inside the installed nix environment, you can perform the backup using `borgCmd`. It will back up to the Borg repository that you have configured.
+Once you are inside the installed nix environment, you can perform the backup using `polardroid-borg`. It will back up to the Borg repository that you have configured.
 
-Before doing so, it can be worthwhile to check which data will be backed up. This is facilitated by the `ncduCmd` command. It receives the same set of excludes that are applied to Borg; allowing you to preview what would be backed up. Note that the exclude rule implementations are slightly different between these tools; ncdu rules will match any path with the same suffix for instance.
+Before doing so, it can be worthwhile to check which data will be backed up. This is facilitated by the `polardroid-ncdu` command. It receives the same set of excludes that are applied to Borg; allowing you to preview what would be backed up. Note that the exclude rule implementations are slightly different between these tools; ncdu rules will match any path with the same suffix for instance.
 
 ## Restoring and testing the backup
 

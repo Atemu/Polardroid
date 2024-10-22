@@ -105,7 +105,7 @@ in
       };
       exclusions = lib.mkIf this.recommendedExclusions (import ./exclusions.nix);
     };
-    recovery.borgCmd =
+    recovery.polardroid-borg =
       let
         inherit (this.borg)
           args
@@ -116,18 +116,18 @@ in
         exe = lib.getExe this.borg.package;
         argString = lib.cli.toGNUCommandLineShell { } args;
       in
-      crossPkgs.writeShellScriptBin "borgCmd" ''
+      crossPkgs.writeShellScriptBin "polardroid-borg" ''
         set -o allexport # Export the following env vars
         ${lib.toShellVars env}
         exec ${exe} create ${argString} "${repo}::${name}" "${this.path}" "$@"
       '';
-    recovery.ncduCmd =
+    recovery.polardroid-ncdu =
       let
         inherit (this.ncdu) args env;
         exe = lib.getExe this.ncdu.package;
         argString = lib.cli.toGNUCommandLineShell { } args;
       in
-      crossPkgs.writeShellScriptBin "ncduCmd" ''
+      crossPkgs.writeShellScriptBin "polardroid-ncdu" ''
         set -o allexport # Export the following env vars
         ${lib.toShellVars env}
         exec ${exe} ${argString} ${this.path} "$@"
