@@ -2,7 +2,7 @@
 
 Polardroid is a tool that aims to provide efficient full Android system backups by utilising [borgbackup](https://www.borgbackup.org/) to back up the Android userdata filesystem state.
 
-The [Nix package manager](https://nixos.org/) and associated [Nixpkgs package distribution](https://github.com/NixOS/nixpkgs) are used to construct a software environment containing the required executables on the device. The backup environment and surrounding infrastructure are configured declaratively using a NixOS module system.
+The [Nix package manager](https://nixos.org/) and associated [Nixpkgs package distribution](https://github.com/NixOS/nixpkgs) are used to construct a software environment containing the required executables on the device. The backup environment and surrounding infrastructure are configured declaratively using a NixOS-style custom module system.
 
 ## Prerequisites
 
