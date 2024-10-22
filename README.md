@@ -62,7 +62,9 @@ Before doing so, it can be worthwhile to check which data will be backed up. Thi
 
 ## Restoring and testing the backup
 
-Backing up a dataset is one half of the process. The other is actually restoring it and ensuring that doing so is possible. A backup that you cannot restore is not a backup.
+Backing up a dataset is one half of the process. The other is actually restoring it and ensuring that doing so is possible.
+
+There's a lot that can go wrong, which is why you *must* test the backup produced by Polardroid to assure that your data is actually safe; a backup that you cannot restore is not a backup.
 
 Restoring a backup has the same environmental requirements as producing one; you must have a root shell and no other processes writing to userdata.
 
