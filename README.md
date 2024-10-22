@@ -6,7 +6,9 @@ The [Nix package manager](https://nixos.org/) and associated [Nixpkgs package di
 
 ## Prerequisites
 
-You must have root shell access to your Android device which requires an unlocked bootloader in most cases. Unlocking an Android device implies wiping userdata. If you have not unlocked your device, the system data held on the device is practically inaccessible to you and cannot be backed up.
+You must have root shell access to your Android device which requires an unlocked bootloader in most cases.  
+
+(Unlocking a locked Android device implies wiping all of its userdata. If you have not unlocked your device yet, the system data held on the device is practically inaccessible to you and cannot be backed up in any way. This tool cannot help you in that case.)
 
 You must have the Nix package manager installed. Its and surrounding projects' functions are fundamental to this project. You can install it beside your primary distribution without interference using the official installer on https://nixos.org/download/#nix-install-linux. macOS should work too but is less tested and has known limitations surrounding case sensitivity of software files to be installed onto the device.  
 There is no support for M$ Windows. Install a proper operating system; perhaps using a VM/WSL if you have no other option.
