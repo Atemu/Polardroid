@@ -1,20 +1,23 @@
 {
   lib,
   openssh,
-  writeShellScriptBin,
+  writeShellScript,
   writeScript,
   writeText,
+  writeShellApplication,
   runCommand,
   android-tools,
   pv,
 
-  prefix,
-  recoveryEnv,
-  sshPort,
+  eval,
 }:
 
 let
   inherit (lib) getExe getBin optionalString;
+
+  prefix = eval.config.recovery.prefix;
+  recoveryEnv = eval.config.recovery.env;
+  sshPort = toString eval.config.host.ssh.port;
 
   # TODO make non-tmpfs installation work again
   useTmpfs = true;
@@ -34,9 +37,7 @@ let
   sshdConfigPatched = runCommand "sshdConfigPatched" { } ''
     substitute ${sshdConfig} $out --replace "UsePAM yes" ""
   '';
-in
 
-rec {
   enterScript = writeScript "enter" ''
     #!/bin/sh
 
@@ -76,18 +77,18 @@ rec {
     fi
   '';
 
-  adbScriptBin =
+  adbScript =
     name: script:
-    writeShellScriptBin name ''
+    writeShellScript name ''
       PATH=${android-tools}/bin/:$PATH
 
       ${script}
     '';
 
-  installCmd = adbScriptBin "installCmd" (
+  install = adbScript "polardroid-install" (
     ''
       if adb shell 'ls -d ${prefix} > /dev/null 2>&1' ; then
-        echo Error: Nix environment has been installed already. Remove it using the removeCmd.
+        echo Error: Nix environment has been installed already. Remove it using `polardroid remove`.
         exit 1
       fi
 
@@ -117,7 +118,7 @@ rec {
     ''
   );
 
-  removeCmd = adbScriptBin "removeCmd" (
+  remove = adbScript "polardroid-remove" (
     ''
       adb shell sh ${prefix}/remove
     ''
@@ -132,7 +133,7 @@ rec {
   );
 
   # One step because you only need to run this once and it works from there on
-  setupSsh = writeShellScriptBin "setupSsh" ''
+  sshUp = writeShellScript "polardroid-ssh-up" ''
     echo 'Forwarding SSH port to host'
     adb reverse tcp:${sshPort} tcp:${sshPort}
 
@@ -158,7 +159,7 @@ rec {
     echo 'To stop this sshd and remove the forwards, run the `tearDownSshd` script.'
   '';
 
-  tearDownSsh = writeShellScriptBin "tearDownSsh" ''
+  sshDown = writeShellScript "polardroid-ssh-down" ''
     echo 'Removing all adb port forwards'
     adb forward --remove-all
     adb reverse --remove-all
@@ -167,4 +168,23 @@ rec {
 
     pkill -f Port=${sshPort}
   '';
+in
+writeShellApplication {
+  name = "polardroid";
+  text = builtins.readFile ./cli.sh;
+  runtimeEnv = {
+    inherit
+      install
+      remove
+      sshUp
+      sshDown
+      ;
+      enableSsh = eval.config.host.ssh.enable;
+  };
+
+  derivationArgs = {
+    passthru = {
+      inherit eval;
+    };
+  };
 }

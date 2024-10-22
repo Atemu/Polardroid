@@ -7,11 +7,6 @@
 
 let
   this = config.host;
-  cmds = pkgs.callPackage ./cmds.nix {
-    prefix = config.recovery.prefix;
-    recoveryEnv = config.recovery.env;
-    sshPort = toString this.ssh.port;
-  };
 in
 
 {
@@ -46,22 +41,6 @@ in
         description = ''
           TCP port to use for reverse SSH.
         '';
-      };
-    };
-    env = lib.mkOption {
-      internal = true;
-      default = pkgs.buildEnv {
-        name = "hostCmds";
-        paths =
-          with cmds;
-          [
-            installCmd
-            removeCmd
-          ]
-          ++ lib.optionals this.ssh.enable [
-            setupSsh
-            tearDownSsh
-          ];
       };
     };
   };

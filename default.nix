@@ -22,4 +22,6 @@ let
       ];
   };
 in
-eval.config.host.env // { passthru = eval; }
+pkgs.callPackage ./cli.nix {
+  inherit eval;
+}

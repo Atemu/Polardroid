@@ -16,7 +16,7 @@ There is no support for M$ Windows. Install a proper operating system; perhaps u
 1. Bring your Android device into an (ideally) read-only state with root access. See [Getting a root shell](#getting-a-root-shell) on how to achieve that. Ensure that you can get into `adb shell` as root and that nothing else is running.
 2. Configure the backup according to your setup, needs and preferences using the provided options in a configuration module. It works the same way your NixOS config works on NixOS but with a different set of options.
 3. Run `nix-build --arg configuration ./path/to/your/configuration.nix`
-4. Run `installCmd` to install and then optionally `setupSsh` if you want to be able to access the host PC from the device.
+4. Run `polardroid install` to install and then optionally `polardroid ssh setup` if you want to be able to access the host PC from the device.
 5. Follow the printed instructions to enter the shell
 6. Use the provided wrapper commands to [perform the backup](#performing-the-backup)
 
@@ -107,12 +107,12 @@ Backups can be tested by using another device. You can use an old and/or partial
 
 ## Commands
 
-| Command       | Function                                                                                             |
-|---------------|------------------------------------------------------------------------------------------------------|
-| `installCmd`  | Installs the nix environment onto a connected device                                                 |
-| `removeCmd`   | Removes an installed nix environment from a connected device                                         |
-| `setupSsh`    | Runs an unprivileged ssh daemon that facilitates access to the host machine from the Android device. |
-| `teardownSsh` | Stops the host access provided by `setupSsh` again.                                                  |
+| Command    | Function                                                                                             |
+|------------|------------------------------------------------------------------------------------------------------|
+| `install`  | Installs the nix environment onto a connected device                                                 |
+| `remove`   | Removes an installed nix environment from a connected device                                         |
+| `ssh up`   | Runs an unprivileged ssh daemon that facilitates access to the host machine from the Android device. |
+| `ssh down` | Stops the host access provided by `ssh up` again.                                                    |
 
 ## Limitations
 
