@@ -3,4 +3,4 @@ args@{
   ...
 }:
 
-pkgs.mkShell { buildInputs = [ (import ./default.nix args) ]; }
+pkgs.mkShellNoCC { buildInputs = [ (import ./default.nix args) ]; }
