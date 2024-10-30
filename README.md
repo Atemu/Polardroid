@@ -21,7 +21,8 @@ There is no support for M$ Windows. Install a proper operating system; perhaps u
 4. Run `polardroid install` to install and then optionally `polardroid ssh setup` if you want to be able to access the host PC from the device.
 5. Follow the printed instructions to enter the shell
 6. Use the provided wrapper commands to [perform the backup](#performing-the-backup)
-7. Tear the host access via `polardroid ssh down` and remove the device environment using `polardroid remove`.
+7. Exit the device shell
+8. Tear the host access via `polardroid ssh down` and remove the device environment using `polardroid remove`.
 
 ## Getting a root shell
 
