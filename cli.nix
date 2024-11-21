@@ -88,7 +88,7 @@ let
   install = adbScript "polardroid-install" (
     ''
       if adb shell 'ls -d ${prefix} > /dev/null 2>&1' ; then
-        echo Error: Nix environment has been installed already. Remove it using `polardroid remove`.
+        echo 'Error: Nix environment has been installed already. Remove it using `polardroid remove`.'
         exit 1
       fi
 
