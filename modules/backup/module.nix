@@ -40,7 +40,7 @@ in
     '';
     borg = {
       args = lib.mkOption {
-        type = lib.types.attrs; # TODO is there a more accurate type here?
+        type = with lib.types; attrsOf anything;
         description = ''
           The arguments to pass to Borg as an attrset passed to `lib.cli.toGNUCommandLineShell`.
         '';
@@ -81,7 +81,7 @@ in
     ncdu = {
       package = lib.mkPackageOption targetPkgs "ncdu" { };
       args = lib.mkOption {
-        type = with lib.types; attrs;
+        type = with lib.types; attrsOf anything;
         default = { };
       };
       env = lib.mkOption {
