@@ -21,7 +21,14 @@ let
         configuration
       ];
   };
+  failedAssertions = map (x: x.message) (lib.filter (x: !x.assertion) eval.config.assertions);
+
+  cli = pkgs.callPackage ./cli.nix {
+    inherit eval;
+  };
 in
-pkgs.callPackage ./cli.nix {
-  inherit eval;
-}
+
+if failedAssertions != [ ] then
+  throw "\nFailed assertions:\n${lib.concatStringsSep "\n" (map (x: "- ${x}") failedAssertions)}"
+else
+  cli
