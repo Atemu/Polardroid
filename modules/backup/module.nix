@@ -16,8 +16,8 @@ in
       the backup functionality.
 
       This option exists because this project could also be used for just
-      installing a temporary Nix environment onto your phone which you may not
-      want to have to configure the backup part of this project for.
+      installing a temporary environment onto your phone which you may not want
+      to have to configure the backup part of this project for.
     '';
     path = lib.mkOption {
       description = ''

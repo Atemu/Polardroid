@@ -67,7 +67,7 @@ in
         This does not necessarily need to be persistent but it needs to be able
         to hold the entire device env closure.
       '';
-      default = "/data/local/tmp/nix-chroot"; # TODO default /tmp if with for tmpfs
+      default = "/data/local/tmp/polardroid-chroot"; # TODO default /tmp if with for tmpfs
       example = "/tmp";
     };
   };

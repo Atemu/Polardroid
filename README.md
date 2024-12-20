@@ -77,7 +77,7 @@ Restoring an entire backup is sadly not possible. It currently not yet known why
 
 Before you restore a backup, install your Android ROM onto the device (ideally the same ROM you took the backup on) and do the initial setup to the point where you can get a root shell. (Everything done here will be wiped during the restore.) It is not possible to restore to a blank userdata partition, you must let Android populate it first.
 
-Once that is done, you can bring the device into a root+read-only state, install the nix environment and then use `borg extract` in order to restore certain files or directories:
+Once that is done, you can bring the device into a root+read-only state, install the Polardroid environment and then use `borg extract` in order to restore certain files or directories:
 
 ```
 borg extract --progress --numeric-ids ssh://youruser@127.0.0.1:4222/path/to/backup::backup-name /data/app
@@ -117,8 +117,8 @@ Backups can be tested by using another device. You can use an old and/or partial
 
 | Command    | Function                                                                                             |
 |------------|------------------------------------------------------------------------------------------------------|
-| `install`  | Installs the nix environment onto a connected device                                                 |
-| `remove`   | Removes an installed nix environment from a connected device                                         |
+| `install`  | Installs the Polardroid environment onto a connected device                                          |
+| `remove`   | Removes an installed Polardroid environment from a connected device                                  |
 | `ssh up`   | Runs an unprivileged ssh daemon that facilitates access to the host machine from the Android device. |
 | `ssh down` | Stops the host access provided by `ssh up` again.                                                    |
 

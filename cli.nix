@@ -88,7 +88,7 @@ let
   install = adbScript "polardroid-install" (
     ''
       if adb shell 'ls -d ${prefix} > /dev/null 2>&1' ; then
-        echo 'Error: Nix environment has been installed already. Remove it using `polardroid remove`.'
+        echo 'Error: Polardroid environment appears to have already been installed. Remove it using `polardroid remove`.'
         exit 1
       fi
 
@@ -103,7 +103,7 @@ let
       # We must do a dance with temporary files instead. Ugh.
       # TODO make tempfile cleanup more robust
       tmptar="$(mktemp)"
-      devicetmp=${prefix}/tmp/nix-device-env.tar.gz
+      devicetmp=${prefix}/tmp/polardroid-device-env.tar.gz
 
       nix-store --query --requisites ${deviceEnv} | cut -c 2- | tar cf - -C / --files-from=/dev/stdin | gzip -2 > $tmptar
       adb shell mkdir -p "$(dirname "$devicetmp")"
@@ -122,7 +122,7 @@ let
       adb shell chmod +x ${prefix}/enter
       adb shell chmod +x ${prefix}/cleanup
       adb shell chmod +x ${prefix}/remove
-      echo 'Nix has been installed, you can now run `adb shell` and then `${prefix}/enter` to get a Nix environment'
+      echo 'Polardroid has been installed, you can now run `adb shell` and then `${prefix}/enter` to enter your environment'
 
       # Fake `/etc/passwd` to make SSH work
       adb shell 'mkdir -p ${prefix}/etc/'
@@ -140,7 +140,7 @@ let
     ''
     + ''
 
-      echo "All traces of Nix removed."
+      echo "All traces of Polardroid removed."
     ''
   );
 
