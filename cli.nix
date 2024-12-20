@@ -99,8 +99,20 @@ let
       adb shell mount -t tmpfs tmpfs ${prefix}
     ''
     + ''
-      nix-store --query --requisites ${deviceEnv} | cut -c 2- \
-        | tar cf - -C / --files-from=/dev/stdin | ${getExe pv} | gzip -2 | adb shell 'gzip -d | tar xf - -C ${prefix}/'
+      # As of Android 14, you cannot pipe "large" quantities into ADB.
+      # We must do a dance with temporary files instead. Ugh.
+      # TODO make tempfile cleanup more robust
+      tmptar="$(mktemp)"
+      devicetmp=${prefix}/tmp/nix-device-env.tar.gz
+
+      nix-store --query --requisites ${deviceEnv} | cut -c 2- | tar cf - -C / --files-from=/dev/stdin | gzip -2 > $tmptar
+      adb shell mkdir -p "$(dirname "$devicetmp")"
+      adb push $tmptar $devicetmp
+      rm $tmptar
+      echo Populating nix store on the device
+      adb shell "gzip -d < $devicetmp | tar xf - -C ${prefix}/"
+      adb shell rm $devicetmp
+
       adb shell "mkdir -p ${prefix}/nix/var/nix/profiles/ && ln -s ${deviceEnv} ${prefix}/nix/var/nix/profiles/default"
 
       # Provide handy script to enter an env with Nix
