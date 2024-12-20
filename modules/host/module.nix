@@ -31,9 +31,9 @@ in
       '';
       apply = lib.removePrefix "/";
     };
-    ssh = {
+    rsh = {
       enable =
-        lib.mkEnableOption "reverse SSH access from the device to the host computer"
+        lib.mkEnableOption "reverse shell access from the device to the host computer via SSH"
         // lib.mkOption { default = true; };
       port = lib.mkOption {
         type = lib.types.port;
@@ -48,8 +48,8 @@ in
   config = {
     backup.borg.repo =
       let
-        inherit (this) user ssh borg;
+        inherit (this) user rsh borg;
       in
-      "ssh://${user}@127.0.0.1:${toString ssh.port}/${borg.repository}";
+      "ssh://${user}@127.0.0.1:${toString rsh.port}/${borg.repository}";
   };
 }

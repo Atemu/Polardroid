@@ -5,20 +5,20 @@ case "$1" in
     "remove")
         "${remove}"
         ;;
-    "ssh")
-        if [ -z "${enableSsh}" ]; then
-            echo SSH is disabled
+    "rsh")
+        if [ -z "${enableRsh}" ]; then
+            echo RSH is disabled
             exit 1
         else
             case "$2" in
                 "up")
-                    "${sshUp}"
+                    "${rshUp}"
                     ;;
                 "down")
-                    "${sshDown}"
+                    "${rshDown}"
                     ;;
                 *)
-                    echo Unknown SSH command: "$2"
+                    echo Unknown RSH command: "$2"
                     exit 1
                     ;;
             esac

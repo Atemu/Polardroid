@@ -17,7 +17,7 @@ let
 
   prefix = eval.config.device.prefix;
   deviceEnv = eval.config.device.env;
-  sshPort = toString eval.config.host.ssh.port;
+  rshPort = toString eval.config.host.rsh.port;
 
   # TODO make non-tmpfs installation work again
   useTmpfs = true;
@@ -145,9 +145,9 @@ let
   );
 
   # One step because you only need to run this once and it works from there on
-  sshUp = writeShellScript "polardroid-ssh-up" ''
+  rshUp = writeShellScript "polardroid-rsh-up" ''
     echo 'Forwarding SSH port to host'
-    adb reverse tcp:${sshPort} tcp:${sshPort}
+    adb reverse tcp:${rshPort} tcp:${rshPort}
 
     tmpdir=$(mktemp -d)
 
@@ -159,26 +159,26 @@ let
     adb shell chmod 600 ${prefix}/.ssh/client-key*
     adb push ${writeText "config" "IdentityFile ~/.ssh/client-key"} ${prefix}/.ssh/config
 
-    echo "[127.0.0.1]:${sshPort} ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
+    echo "[127.0.0.1]:${rshPort} ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
     adb push $tmpdir/known_hosts ${prefix}/.ssh/
 
     echo 'Starting new SSHD'
-    ${openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=${sshPort} -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
+    ${openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=${rshPort} -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
 
     USER="''${USER:=<hostusername>}"
 
-    echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p ${sshPort}\` from the device"
+    echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p ${rshPort}\` from the device"
     echo 'To stop this sshd and remove the forwards, run the `tearDownSshd` script.'
   '';
 
-  sshDown = writeShellScript "polardroid-ssh-down" ''
+  rshDown = writeShellScript "polardroid-rsh-down" ''
     echo 'Removing all adb port forwards'
     adb forward --remove-all
     adb reverse --remove-all
 
     adb shell rm -r ${prefix}/.ssh
 
-    pkill -f Port=${sshPort}
+    pkill -f Port=${rshPort}
   '';
 in
 writeShellApplication {
@@ -188,10 +188,10 @@ writeShellApplication {
     inherit
       install
       remove
-      sshUp
-      sshDown
+      rshUp
+      rshDown
       ;
-      enableSsh = eval.config.host.ssh.enable;
+      enableRsh = eval.config.host.rsh.enable;
   };
 
   derivationArgs = {
