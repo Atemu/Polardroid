@@ -23,13 +23,36 @@ in
         username of the user you intend to run the host scripts as.
       '';
     };
-    borg.repository = lib.mkOption {
-      type = lib.types.str;
-      default = builtins.throw "You must specify a `host.borg.repository` in order to use the {option}`backup.enable` functionality.";
-      description = ''
-        The path to the borg repository on the host machine to store backups in.
-      '';
-      apply = lib.removePrefix "/";
+    borg = {
+      host = lib.mkOption {
+        type = lib.types.str;
+        default = "host";
+        description = ''
+          The host on which the borg repository resides.
+
+          If this host requires a specific key to access, you must also set {option}`keyFile`.
+        '';
+      };
+      repository = lib.mkOption {
+        type = lib.types.str;
+        default = builtins.throw "You must specify a `host.borg.repository` in order to use the {option}`backup.enable` functionality.";
+        description = ''
+          The path to the borg repository in the {option}`host` to store the backups in.
+        '';
+        apply = lib.removePrefix "/";
+      };
+      keyFile = lib.mkOption {
+        type = with lib.types; nullOr str;
+        default = null;
+        description = ''
+          The path to the SSH key to install into the device with which it is able to authenticate against the {option}`host`.
+
+          This path must exist on the host machine at the time at which you establish the reverse shell.
+
+          You only need to set this so long as {option}`host.borg.host` is set and that host requires a specific SSH key (i.e. publickey authentication).
+          SSH access to the host machine that you establish reverse shell access from is always provided.
+        '';
+      };
     };
     rsh = {
       enable =
@@ -46,6 +69,6 @@ in
   };
 
   config = {
-    backup.borg.repo = "ssh://host/${this.borg.repository}";
+    backup.borg.repo = "ssh://${this.borg.host}/${this.borg.repository}";
   };
 }

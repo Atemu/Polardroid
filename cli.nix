@@ -19,6 +19,7 @@ let
   deviceEnv = eval.config.device.env;
   rshPort = toString eval.config.host.rsh.port;
   inherit (eval.config.host) user;
+  inherit (eval.config.host.borg) keyFile;
 
   # TODO make non-tmpfs installation work again
   useTmpfs = true;
@@ -115,6 +116,7 @@ let
       adb shell rm $devicetmp
 
       adb shell "mkdir -p ${prefix}/nix/var/nix/profiles/ && ln -s ${deviceEnv} ${prefix}/nix/var/nix/profiles/default"
+      adb shell "mkdir -p ${prefix}/bin/ && ln -s /nix/var/nix/profiles/default/bin/sh ${prefix}/bin/sh"
 
       # Provide handy script to enter an env with Nix
       adb push ${enterScript} ${prefix}/enter
@@ -146,12 +148,21 @@ let
   );
 
   sshConfig = writeText "polardroid-device-ssh-config" ''
+    # Assume it's the host's username on any other host too
+    User ${user}
+
     # This is the host machine the device is connected to
     Host host
       HostName 127.0.0.1
       Port ${rshPort}
-      User ${user}
       IdentityFile ~/.ssh/client-key
+      # Disable ProxyJump for this machine for obvious reasons
+      ProxyJump none
+
+    # Every other machine is accessible via the host
+    Host *
+      ProxyJump host
+      IdentityFile ~/.ssh/config.host.borg.keyFile
   '';
 
   # One step because you only need to run this once and it works from there on
@@ -166,7 +177,8 @@ let
 
     adb shell mkdir -p ${prefix}/.ssh/
     adb push $tmpdir/client-key* ${prefix}/.ssh/
-    adb shell chmod 600 ${prefix}/.ssh/client-key*
+    ${optionalString (keyFile != null) "adb push ${keyFile} ${prefix}/.ssh/config.host.borg.keyFile"}
+    adb shell chmod 600 ${prefix}/.ssh/*
     adb push ${sshConfig} ${prefix}/.ssh/config
 
     echo "[127.0.0.1]:${rshPort} ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
