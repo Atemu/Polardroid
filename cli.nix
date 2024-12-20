@@ -18,6 +18,7 @@ let
   prefix = eval.config.device.prefix;
   deviceEnv = eval.config.device.env;
   rshPort = toString eval.config.host.rsh.port;
+  inherit (eval.config.host) user;
 
   # TODO make non-tmpfs installation work again
   useTmpfs = true;
@@ -144,6 +145,15 @@ let
     ''
   );
 
+  sshConfig = writeText "polardroid-device-ssh-config" ''
+    # This is the host machine the device is connected to
+    Host host
+      HostName 127.0.0.1
+      Port ${rshPort}
+      User ${user}
+      IdentityFile ~/.ssh/client-key
+  '';
+
   # One step because you only need to run this once and it works from there on
   rshUp = writeShellScript "polardroid-rsh-up" ''
     echo 'Forwarding SSH port to host'
@@ -157,7 +167,7 @@ let
     adb shell mkdir -p ${prefix}/.ssh/
     adb push $tmpdir/client-key* ${prefix}/.ssh/
     adb shell chmod 600 ${prefix}/.ssh/client-key*
-    adb push ${writeText "config" "IdentityFile ~/.ssh/client-key"} ${prefix}/.ssh/config
+    adb push ${sshConfig} ${prefix}/.ssh/config
 
     echo "[127.0.0.1]:${rshPort} ssh-ed25519 $(cut -f 2 -d ' ' $tmpdir/host-key.pub)" > $tmpdir/known_hosts
     adb push $tmpdir/known_hosts ${prefix}/.ssh/
@@ -165,9 +175,7 @@ let
     echo 'Starting new SSHD'
     ${openssh}/bin/sshd -f ${sshdConfigPatched} -o Port=${rshPort} -o HostKey=$tmpdir/host-key -o AuthorizedKeysFile=$tmpdir/client-key.pub -o PubkeyAuthentication=yes -o StrictModes=no &
 
-    USER="''${USER:=<hostusername>}"
-
-    echo "You can now reach your host using \`ssh $USER@127.0.0.1 -p ${rshPort}\` from the device"
+    echo 'You can now reach your host using `ssh host` from the device'
     echo 'To stop this sshd and remove the forwards, run the `tearDownSshd` script.'
   '';
 

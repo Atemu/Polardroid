@@ -46,10 +46,6 @@ in
   };
 
   config = {
-    backup.borg.repo =
-      let
-        inherit (this) user rsh borg;
-      in
-      "ssh://${user}@127.0.0.1:${toString rsh.port}/${borg.repository}";
+    backup.borg.repo = "ssh://host/${this.borg.repository}";
   };
 }
