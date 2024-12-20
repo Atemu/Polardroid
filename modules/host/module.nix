@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }:
@@ -34,12 +33,12 @@ in
         '';
       };
       repository = lib.mkOption {
-        type = lib.types.str;
-        default = builtins.throw "You must specify a `host.borg.repository` in order to use the {option}`backup.enable` functionality.";
+        type = with lib.types; nullOr str;
+        default = null;
         description = ''
           The path to the borg repository in the {option}`host` to store the backups in.
         '';
-        apply = lib.removePrefix "/";
+        apply = path: if path == null then null else lib.removePrefix "/" path;
       };
       keyFile = lib.mkOption {
         type = with lib.types; nullOr str;
@@ -70,5 +69,12 @@ in
 
   config = {
     backup.borg.repo = "ssh://${this.borg.host}/${this.borg.repository}";
+
+    assertions = [
+      {
+        assertion = config.backup.enable -> this.borg.repository != null;
+        message = "You must specify a `host.borg.repository` in order to use the {option}`backup.enable` functionality.";
+      }
+    ];
   };
 }
