@@ -132,5 +132,56 @@ in
         ${lib.toShellVars env}
         exec ${exe} ${argString} ${this.path} "$@"
       '';
+    device.polardroid-restore =
+      let
+        inherit (this.borg)
+          repo
+          env
+          ;
+        exe = lib.getExe this.borg.package;
+      in
+      crossPkgs.writeShellApplication {
+        name = "polardroid-restore";
+        runtimeEnv = {
+          # The paths to be restored. These are the paths that contain all the
+          # known useful state. Keep this in sync with what is documented in the
+          # README!
+          RESTORE_PATHS = map (x: "sh:${this.path}/${x}") [
+              "app/"
+              "data/"
+              "system/package*"
+              "system/netpolicy.xml"
+              "system/users/0/"
+              "misc_de/0/apexdata/com.android.permission/"
+              "user_de/0/"
+              "misc/apexdata/com.android.wifi"
+              "system/notification_policy.xml"
+              "property/persistent_properties"
+              "user_de/0/org.lineageos.lineagesettings"
+              "misc/profiles/"
+              "system_ce/"
+          ];
+        } // env;
+        text = ''
+          if [ -z "''${1:-}" ]; then
+             echo "You must provide \`polardroid-restore\` with the name of the borg archive which you wish to restore."
+             exit 1
+          fi
+          ARCHIVE_NAME="$1"
+          shift
+
+          declare -a paths
+
+          if [ -z "''${1:-}" ]; then
+            paths=("''${RESTORE_PATHS[@]}")
+          else
+            paths=("$@")
+          fi
+
+          for path in "''${paths[@]}" ; do
+              ${exe} extract --progress --numeric-ids ${repo}::"$ARCHIVE_NAME" "$path" "$@"
+          done
+        '';
+      };
   };
 }
