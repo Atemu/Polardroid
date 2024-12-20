@@ -94,7 +94,7 @@ This section lists the files and directories that contain certain user-relevant 
 | `/data/app/`                                       | Installed app executables (APK/dex)                             |
 | `/data/data/`                                      | Apps' internal state data                                       |
 | `/data/system/package*`                            | App installation metadata (uid mapping etc.)                    |
-| `/data/system/netpolicy`                           | Firewall settings                                               |
+| `/data/system/netpolicy.xml`                       | Firewall settings                                               |
 | `/data/system/users/0/`                            | User settings including Wallpaper, screen DPI, quick settings   |
 | `/data/misc_de/0/apexdata/com.android.permission/` | App permission settings                                         |
 | `/data/user_de/0/`                                 | Contacts, messages, phone etc.                                  |
