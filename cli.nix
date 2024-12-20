@@ -7,14 +7,11 @@
   writeShellApplication,
   runCommand,
   android-tools,
-  pv,
 
   eval,
 }:
 
 let
-  inherit (lib) getExe getBin optionalString;
-
   prefix = eval.config.device.prefix;
   deviceEnv = eval.config.device.env;
   rshPort = toString eval.config.host.rsh.port;
@@ -97,7 +94,7 @@ let
       # Copy Nix store over to the device
       adb shell mkdir -p ${prefix}
     ''
-    + optionalString useTmpfs ''
+    + lib.optionalString useTmpfs ''
       adb shell mount -t tmpfs tmpfs ${prefix}
     ''
     + ''
@@ -137,7 +134,7 @@ let
     ''
       adb shell sh ${prefix}/remove
     ''
-    + optionalString useTmpfs ''
+    + lib.optionalString useTmpfs ''
       adb shell umount ${prefix}
       adb shell rmdir ${prefix}
     ''
@@ -172,12 +169,14 @@ let
 
     tmpdir=$(mktemp -d)
 
-    ${getBin openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/client-key > /dev/null
-    ${getBin openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/host-key > /dev/null
+    ${lib.getBin openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/client-key > /dev/null
+    ${lib.getBin openssh}/bin/ssh-keygen -N "" -t ed25519 -f $tmpdir/host-key > /dev/null
 
     adb shell mkdir -p ${prefix}/.ssh/
     adb push $tmpdir/client-key* ${prefix}/.ssh/
-    ${optionalString (keyFile != null) "adb push ${keyFile} ${prefix}/.ssh/config.host.borg.keyFile"}
+    ${lib.optionalString (
+      keyFile != null
+    ) "adb push ${keyFile} ${prefix}/.ssh/config.host.borg.keyFile"}
     adb shell chmod 600 ${prefix}/.ssh/*
     adb push ${sshConfig} ${prefix}/.ssh/config
 
@@ -211,7 +210,7 @@ writeShellApplication {
       rshUp
       rshDown
       ;
-      enableRsh = eval.config.host.rsh.enable;
+    enableRsh = eval.config.host.rsh.enable;
   };
 
   derivationArgs = {
