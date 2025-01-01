@@ -143,7 +143,10 @@ in
       crossPkgs.writeShellApplication {
         name = "polardroid-restore";
         runtimeEnv = {
-          RESTORE_PATHS = map (x: "${this.path}/${x}") [
+          # The paths to be restored. These are the paths that contain all the
+          # known useful state. Keep this in sync with what is documented in the
+          # README!
+          RESTORE_PATHS = map (x: "sh:${this.path}/${x}") [
               "app/"
               "data/"
               "system/package*"
@@ -160,20 +163,23 @@ in
           ];
         } // env;
         text = ''
-          if [ -z "$1" ]; then
+          if [ -z "''${1:-}" ]; then
              echo "You must provide \`polardroid-restore\` with the name of the borg archive which you wish to restore."
              exit 1
           fi
           ARCHIVE_NAME="$1"
           shift
 
-          # The paths to be restored. These are the paths that contain all the known
-          # useful state. Keep this in sync with what is documented in the README!
-          paths=(
-          )
+          declare -a paths
+
+          if [ -z "''${1:-}" ]; then
+            paths=("''${RESTORE_PATHS[@]}")
+          else
+            paths=("$@")
+          fi
 
           for path in "''${paths[@]}" ; do
-              ${exe} extract --progress --numeric-ids ${repo}::"$ARCHIVE_NAME" sh:"$path" "$@"
+              ${exe} extract --progress --numeric-ids ${repo}::"$ARCHIVE_NAME" "$path" "$@"
           done
         '';
       };
