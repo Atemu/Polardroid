@@ -154,6 +154,7 @@ in
               "system/users/0/"
               "misc_de/0/apexdata/com.android.permission/"
               "user_de/0/"
+              "media/0/"
               "misc/apexdata/com.android.wifi"
               "system/notification_policy.xml"
               "property/persistent_properties"
