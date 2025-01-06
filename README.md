@@ -98,6 +98,7 @@ This section lists the files and directories that contain certain user-relevant 
 | `/data/system/users/0/`                            | User settings including Wallpaper, screen DPI, quick settings   |
 | `/data/misc_de/0/apexdata/com.android.permission/` | App permission settings                                         |
 | `/data/user_de/0/`                                 | Contacts, messages, phone etc.                                  |
+| `/data/media/0/`                                   | User files (Pictures, Downloads, Multimedia, some app state)    |
 | `/data/misc/apexdata/com.android.wifi`             | WiFi settings                                                   |
 | `/data/system/notification_policy.xml`             | (App) Notification settings                                     |
 | `/data/property/persistent_properties`             | Other more different settings (incl. bluetooth absolute volume) |
