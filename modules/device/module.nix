@@ -39,6 +39,7 @@ in
         coreutils
         findutils
         less
+        gnugrep
         vim
 
         borgbackup
