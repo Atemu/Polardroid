@@ -179,9 +179,7 @@ in
             paths=("$@")
           fi
 
-          for path in "''${paths[@]}" ; do
-              ${exe} extract --progress --numeric-ids ${repo}::"$ARCHIVE_NAME" "$path" "$@"
-          done
+          ${exe} extract --progress --numeric-ids ${repo}::"$ARCHIVE_NAME" "''${paths[@]}" "$@"
         '';
       };
   };
