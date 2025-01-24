@@ -175,6 +175,10 @@ in
 
           if [ -z "''${1:-}" ]; then
             paths=("''${RESTORE_PATHS[@]}")
+
+            # We must delete caches of existing applications because we assume those would not have been backed up
+            # TODO we should probably delete everything under /data/data but that somehow causes issues; unsure why
+            rm -r "/data/data/*/cache/"
           else
             paths=("$@")
           fi
