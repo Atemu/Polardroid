@@ -50,6 +50,7 @@
   "media/0/Android/data/org.videolan.vlc/files/medialib/" # Thumbnails and logs
   "media/0/Android/data/com.elishaazaria.sayboard" # Downloaded models
   "media/0/Android/data/org.woheller69.ttsengine" # Downloaded models
+  "media/0/Android/data/org.woheller69.whisper" # Downloaded models
   "media/0/Backups/" # Handled in other ways
   "media/0/Signal/Backups/" # Handled in other ways
   "data/org.thoughtcrime.securesms/"
