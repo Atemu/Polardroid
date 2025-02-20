@@ -20,6 +20,8 @@
   "data/com.collabora.libreoffice/" # Contains an extracted version of LibreOffice
   "data/im.vector.app" # Useless to backup, keys are in keystore
   "data/io.element.android.x" # Useless to backup, keys are in keystore
+  "data/chat.schildi.android" # Useless to backup, keys are in keystore
+  "data/com.discord" # Online-only app; restores are funky
   "data/de.materna.bbk.mobile.app/databases/geo_database" # Cached DB
   "data/de.materna.bbk.mobile.app/files/com.google.android.gms" # Cached DB
   "data/org.torproject.torbrowser/" # Intended to be stateless
@@ -47,6 +49,7 @@
   "media/0/Android/data/com.google.android.apps.translate/" # Caches
   "media/0/Android/data/org.videolan.vlc/files/medialib/" # Thumbnails and logs
   "media/0/Android/data/com.elishaazaria.sayboard" # Downloaded models
+  "media/0/Android/data/org.woheller69.ttsengine" # Downloaded models
   "media/0/Backups/" # Handled in other ways
   "media/0/Signal/Backups/" # Handled in other ways
   "data/org.thoughtcrime.securesms/"
