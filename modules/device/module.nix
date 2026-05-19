@@ -44,6 +44,8 @@ in
 
         borgbackup
         ncdu
+        util-linux
+        strace
 
         rsync
         openssh
