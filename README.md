@@ -80,7 +80,7 @@ Before you restore a backup, install your Android ROM onto the device (ideally t
 Once that is done, you can bring the device into a root+read-only state, install the Polardroid environment and then use `borg extract` in order to restore certain files or directories:
 
 ```
-borg extract --progress --numeric-ids ssh://youruser@127.0.0.1:4222/path/to/backup::backup-name /data/app
+borg extract --progress --numeric-ids ssh://host/path/to/backup::backup-name /data/app
 ```
 
 Once all the state you care about is restored, you can `adb reboot` and the device should boot into something that should quite closely resemble what you had before. Next finish restoring [state which this tool cannot back up](#Limitations) aswell as user data you may have backed up through other methods (i.e. Pictures).
