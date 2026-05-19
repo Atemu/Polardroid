@@ -57,6 +57,12 @@ In order to stop the entire system while retaining a root shell, Android provide
 
 In order to "boot" into regular Android again, you can simply `adb reboot` or command Android to `start` again.
 
+## Reverse shell
+
+In order to perform the backup, you need to be able to connect to the machine on which the backup will be stored. With borg, this is typically achieved via SSH.
+
+The device in its current state is not capable of making arbitrary connections on its own. For this reason, polardroid offers a reverse shell tunnel with which the device is able to connect to your host computer with which you access the device. You can activate it using `polardroid rsh up` after having installed the polardroid environment. This will run a local ssh daemon that only trusts an ephemeral key that is put on the device.
+
 ## Performing the backup
 
 Once you are inside the installed nix environment, you can perform the backup using `polardroid-borg`. It will back up to the Borg repository that you have configured.
