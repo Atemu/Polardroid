@@ -20,6 +20,10 @@ in
       internal = true;
       type = lib.types.package;
     };
+    polardroid-restore = mkOption {
+      internal = true;
+      type = lib.types.package;
+    };
     packages = mkOption {
       description = ''
         Packages to install inside the device env.
@@ -59,6 +63,7 @@ in
           lib.optionals config.backup.enable [
             this.polardroid-borg
             this.polardroid-ncdu
+            this.polardroid-restore
           ]
           ++ this.packages;
       };
